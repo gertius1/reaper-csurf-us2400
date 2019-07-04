@@ -174,7 +174,7 @@ class CSurf_US2400 : public IReaperControlSurface
   double s_ts_end;
 
   // on screen help
-  CSurf_US2400_helpoverlay hlpHandler;
+  CSurf_US2400_helpoverlay* hlpHandler;
   CSurf_US2400_stripoverlay* stpHandler;
 
   //////// MIDI ////////
@@ -725,8 +725,8 @@ class CSurf_US2400 : public IReaperControlSurface
       if (q_mkey) 
       {
         s_mkey_on = MDELAY;
-		hlpHandler.SetQkey(3);
-      } else hlpHandler.SetQkey(0);
+		hlpHandler->SetQkey(3);
+      } else hlpHandler->SetQkey(0);
 
       MySetSurface_UpdateButton(0x6b, q_mkey, false);
     }
@@ -747,7 +747,7 @@ class CSurf_US2400 : public IReaperControlSurface
 
   void OnShift(bool btn_state)
   {
-    if ((btn_state && q_fkey) && (s_initdone)) hlpHandler.Hlp_ToggleWindow();
+    if ((btn_state && q_fkey) && (s_initdone)) hlpHandler->Hlp_ToggleWindow(m_cfg_flags&csurf_utils::CONFIG_FLAG_METER_MODE);
     MySetSurface_ToggleShift(btn_state);
   } // OnShift()
 
@@ -1303,7 +1303,7 @@ class CSurf_US2400 : public IReaperControlSurface
 				WDL_String nameStr = WDL_String(name);
 				nameStr.DeleteSub(0, 8);
 				nameStr.SetLen(len);
-				hlpHandler.SetHelpKeyString(key, m, q, nameStr);
+				hlpHandler->SetHelpKeyString(key, m, q, nameStr);
               }
             }
           }
@@ -1424,7 +1424,7 @@ public:
   CSurf_US2400(int indev, int outdev, int cflags, int *errStats)
   {
     ////// GLOBAL VARS //////
-	hlpHandler = CSurf_US2400_helpoverlay();
+	hlpHandler = new CSurf_US2400_helpoverlay();
 	stpHandler = new CSurf_US2400_stripoverlay();
     m_midi_in_dev = indev;
     m_midi_out_dev = outdev;
@@ -1538,7 +1538,7 @@ public:
   {
     stpHandler->Stp_RetrieveCoords();
 
-	hlpHandler.Hlp_FillStrs(); // insert hardcoded strings into hlp_xxx_str
+	hlpHandler->Hlp_FillStrs(); // insert hardcoded strings into hlp_xxx_str
 
     Utl_GetCustomCmdIds(); // inserts custom cmd strs into hlp_keys_str
     CSurf_ResetAllCachedVolPanStates(); 
@@ -2064,7 +2064,7 @@ public:
 
     MySetSurface_UpdateButton(0x63, m_flip, true);
 
-	hlpHandler.SetFlip(m_flip);
+	hlpHandler->SetFlip(m_flip);
   } // MySetSurface_ToggleFlip
 
 
@@ -2081,8 +2081,8 @@ public:
         if (m_flip) MySetSurface_UpdateFader(ch_id);
         else MySetSurface_UpdateEncoder(ch_id);
 
-	if (btn_state) hlpHandler.SetQkey(2);
-    else hlpHandler.SetQkey(0);
+	if (btn_state) hlpHandler->SetQkey(2);
+    else hlpHandler->SetQkey(0);
   } // MySetSurface_ToggleFKey
 
 
@@ -2093,8 +2093,8 @@ public:
     MySetSurface_UpdateButton(0x74, btn_state, false);
     MySetSurface_UpdateAuxButtons();
 
-    if (btn_state) hlpHandler.SetQkey(1);
-    else hlpHandler.SetQkey(0);
+    if (btn_state) hlpHandler->SetQkey(1);
+    else hlpHandler->SetQkey(0);
   } // MySetSurface_ToggleShift
 
 
@@ -2225,7 +2225,7 @@ public:
     // bugfix: deselect master
     if (!master_sel) SetTrackSelected(csurf_utils::Cnv_ChannelIDToMediaTrack(24, s_ch_offset), false);
 
-	hlpHandler.SetMode(1);
+	hlpHandler->SetMode(1);
   } // MySetSurface_EnterChanMode
 
 
@@ -2279,7 +2279,7 @@ public:
       if (m_flip) MySetSurface_UpdateFader(ch_id);
       else MySetSurface_UpdateEncoder(ch_id);
 
-	hlpHandler.SetMode(0);
+	hlpHandler->SetMode(0);
   } // MySetSurface_EnterPanMode
 
 
@@ -2306,7 +2306,7 @@ public:
       MySetSurface_UpdateEncoder(ch_id); // update encoders on flip also (> send pan)!
     }
 
-	hlpHandler.SetMode(2);
+	hlpHandler->SetMode(2);
   } // MySetSurface_EnterAuxMode
 
 
@@ -3301,7 +3301,7 @@ public:
       {
         q_mkey = false;
 
-		hlpHandler.SetQkey(0);
+		hlpHandler->SetQkey(0);
 
         //reset buttons
         MySetSurface_UpdateAuxButtons(); // aux

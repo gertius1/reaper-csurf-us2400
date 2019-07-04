@@ -4,13 +4,11 @@ CSurf_US2400_helpoverlay* hlpHandler;
 
 LRESULT CALLBACK Hlp_WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	int params[5];
-	csurf_utils::parseParams((const char*)lParam, params);
 
 	switch (uMsg)
 	{
 	case WM_PAINT:
-		hlpHandler->Hlp_Paint(hwnd, params[4] & csurf_utils::CONFIG_FLAG_METER_MODE);
+		hlpHandler->Hlp_Paint(hwnd);
 		break;
 	}
 
@@ -28,6 +26,8 @@ CSurf_US2400_helpoverlay::CSurf_US2400_helpoverlay() {
 	hlp_grid = 90;
 	hlp_box_size = 80;
 	hlp_sep = 20;
+
+	meter_mode = false;
 
 	hlp_hwnd = NULL;
 
@@ -429,7 +429,7 @@ void CSurf_US2400_helpoverlay::Hlp_DrawBox(const char* caption, int top, int lef
 	DeleteObject(lgrey_ln);
 }
 
-void CSurf_US2400_helpoverlay::Hlp_Paint(HWND hwnd, bool meter_mode)
+void CSurf_US2400_helpoverlay::Hlp_Paint(HWND hwnd)
 {
 	RECT rect;
 
@@ -580,8 +580,9 @@ void CSurf_US2400_helpoverlay::Hlp_Paint(HWND hwnd, bool meter_mode)
 	DeleteObject(qkey_bg);
 }
 
-void CSurf_US2400_helpoverlay::Hlp_ToggleWindow()
-{
+void CSurf_US2400_helpoverlay::Hlp_ToggleWindow(bool isMeterMode)
+{	
+	meter_mode = isMeterMode;
 	if (hlp_open == 0)
 	{
 		if (hlp_hwnd == NULL)

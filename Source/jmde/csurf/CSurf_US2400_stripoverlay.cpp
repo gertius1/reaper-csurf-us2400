@@ -3,7 +3,7 @@
 // float to int macro
 #define F2I(x) (int)((x) + 0.5)
 
-CSurf_US2400_stripoverlay* stpHandler;
+static CSurf_US2400_stripoverlay* stpHandler;
 
 LRESULT CALLBACK Stp_WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -61,6 +61,8 @@ CSurf_US2400_stripoverlay::CSurf_US2400_stripoverlay() {
 	stp_class.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
 	RegisterClassEx(&stp_class);
+
+	stpHandler = this;
 }
 
 void CSurf_US2400_stripoverlay::SetRepaint() { stp_repaint = true; }
@@ -279,8 +281,8 @@ bool CSurf_US2400_stripoverlay::ShouldReopen() {
 }
 
 void CSurf_US2400_stripoverlay::ToggleWindow(int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_chan, bool m_flip) {
-	if (stp_hwnd == NULL) stpHandler->Stp_OpenWindow(chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_chan, m_flip);
-	else stpHandler->Stp_CloseWindow();
+	if (stp_hwnd == NULL) this->Stp_OpenWindow(chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_chan, m_flip);
+	else this->Stp_CloseWindow();
 }
 
 

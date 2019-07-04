@@ -34,6 +34,8 @@ class CSurf_US2400_helpoverlay {
 		int hlp_box_size;
 		int hlp_sep;
 
+		bool meter_mode;
+
 		HWND hlp_hwnd;
 		WNDCLASSEX hlp_class;
 
@@ -44,9 +46,9 @@ class CSurf_US2400_helpoverlay {
 		CSurf_US2400_helpoverlay();
 		~CSurf_US2400_helpoverlay();
 		void Hlp_FillStrs();
-		void Hlp_ToggleWindow();
+		void Hlp_ToggleWindow(bool meter_mode);
 		void Hlp_Update();
-		void Hlp_Paint(HWND hwnd, bool meter_mode);
+		void Hlp_Paint(HWND hwnd);
 		void SetQkey(int qkey);
 		void SetFlip(bool flip);
 		void SetMode(int mode);
