@@ -39,6 +39,10 @@ elseif(APPLE)
   target_compile_options(reaper_plugin PUBLIC
     -fsigned-char -fobjc-arc -Wno-error=deprecated-declarations
   )
+  target_link_libraries(reaper_plugin
+    "-framework CoreGraphics"
+    "-framework Foundation"
+  )
 else()
   target_compile_options(reaper_plugin PUBLIC
     -fsigned-char -Werror -lX11

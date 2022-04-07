@@ -2,6 +2,8 @@
 #ifndef _WIN32
 	#ifndef __APPLE__
 		#include <X11/Xlib.h>
+	#else 
+		#include <CoreGraphics/CGDisplayConfiguration.h>
 	#endif
 #endif
 
@@ -291,6 +293,10 @@ void CSurf_US2400_stripoverlay::Stp_OpenWindow(int chan_fx, int chan_par_offs, i
 				stp_y = scr.bottom - stp_height;
 			#else
 				#ifdef __APPLE__
+					auto mainDisplayId = CGMainDisplayID();
+					stp_width = CGDisplayPixelsWide(mainDisplayId);
+					height = CGDisplayPixelsHigh(mainDisplayId);
+					stp_y = height - stp_height;
 				#else
 					Display *dpy;
 					int width, height, snum;
@@ -307,13 +313,10 @@ void CSurf_US2400_stripoverlay::Stp_OpenWindow(int chan_fx, int chan_par_offs, i
 		#ifdef _WIN32
 			stp_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_NOACTIVATE, "stp", "US-2400 Display", WS_THICKFRAME | WS_POPUP, stp_x, stp_y, stp_width, stp_height, NULL, NULL, g_hInst, NULL);
 		#else
-			#ifdef __APLE__
-			#else
-				stp_hwnd = CreateDialog(g_hInst, MAKEINTRESOURCE(0), nullptr, (WNDPROC)Stp_WindowProc);
-				SetWindowLong(stp_hwnd, GWL_STYLE, WS_CAPTION|WS_THICKFRAME|WS_SYSMENU);
-				SetWindowText(stp_hwnd, "US-2400 Display");
-				SetWindowPos(stp_hwnd, HWND_TOPMOST, stp_x, stp_y, stp_width, stp_height, SWP_SHOWWINDOW | SWP_NOCOPYBITS);
-			#endif
+			stp_hwnd = CreateDialog(g_hInst, MAKEINTRESOURCE(0), nullptr, (WNDPROC)Stp_WindowProc);
+			SetWindowLong(stp_hwnd, GWL_STYLE, WS_CAPTION|WS_THICKFRAME|WS_SYSMENU);
+			SetWindowText(stp_hwnd, "US-2400 Display");
+			SetWindowPos(stp_hwnd, HWND_TOPMOST, stp_x, stp_y, stp_width, stp_height, SWP_SHOWWINDOW | SWP_NOCOPYBITS);
 		#endif
 	}
 
