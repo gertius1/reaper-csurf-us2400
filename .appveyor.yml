@@ -37,20 +37,20 @@ for:
       sudo update-alternatives --set gcc /usr/bin/gcc-7
       case $ARCH in
       x86_64)
-        install-deps amd64 x11-dev
+        install-deps amd64 libx11-dev
         ;;
       i686)
-        install-deps i386 g++-multilib x11-dev
+        install-deps i386 g++-multilib libx11-dev
         export TOOLCHAIN=cmake/linux-cross.cmake \
                TOOLCHAIN_PREFIX=i386-linux-gnu
         ;;
       armv7l)
-        install-deps armhf g++-arm-linux-gnueabihf x11-dev
+        install-deps armhf g++-arm-linux-gnueabihf libx11-dev
         export TOOLCHAIN=cmake/linux-cross.cmake \
                TOOLCHAIN_PREFIX=arm-linux-gnueabihf
         ;;
       aarch64)
-        install-deps arm64 g++-aarch64-linux-gnu x11-dev
+        install-deps arm64 g++-aarch64-linux-gnu libx11-dev
         export TOOLCHAIN=cmake/linux-cross.cmake \
                TOOLCHAIN_PREFIX=aarch64-linux-gnu
         ;;
