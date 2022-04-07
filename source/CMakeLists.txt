@@ -35,9 +35,13 @@ if(WIN32)
     )
    target_compile_definitions(reaper_plugin PUBLIC NOMINMAX)
    target_link_libraries(reaper_plugin winmm)
+elseif(APPLE)
+  target_compile_options(reaper_plugin PUBLIC
+    -fsigned-char -fobjc-arc -Wno-error=deprecated-declarations
+  )
 else()
   target_compile_options(reaper_plugin PUBLIC
-    -Werror -lX11
+    -fsigned-char -Werror -lX11
   )
 endif()
 
