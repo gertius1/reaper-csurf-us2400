@@ -3199,7 +3199,7 @@ public:
   {
     descspace.Set(DESCSTRING);
     char tmp[512];
-    WDL_String vers = WDL_String("1.2.1");
+    WDL_String vers = WDL_String("1.3.0");
     WDL_String midiStr = WDL_String(0);
     char midi_in_name[64];
     midi_in_name[0]=0;

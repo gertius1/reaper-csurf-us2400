@@ -1,6 +1,6 @@
 @description Tascam US-2400 Control Surface Native Mode
 @author Greg Tangey (Ruxton)
-@version 1.2.1
+@version 1.3.0
 @changelog Fixes overlay crash
 @provides
   [win64] reaper_csurf_us2400.dll https://github.com/Ruxton/reaper-csurf-us2400/releases/download/$version/reaper_csurf_us2400.dll
