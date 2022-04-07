@@ -1,0 +1,160 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "windows.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""windows.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SURFACEEDIT_US2400 DIALOGEX 0, 0, 268, 75
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    RTEXT           "MIDI input:",IDC_STATIC,23,6,56,8
+    COMBOBOX        IDC_COMBO_MIDI_IN,81,4,181,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "MIDI output:",IDC_STATIC,23,23,56,8
+    COMBOBOX        IDC_COMBO_MIDI_OUT,81,21,181,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable metermode (may cause problems)",IDC_CHECK_METERMODE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,39,177,10
+    CONTROL         "Bank switch by 8, shift+button is 24 (old behaviour)",IDC_CHECK_BANK_SWITCH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,50,177,10
+    CONTROL         "Don't flash buttons",IDC_CHECK_NO_FLASHING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,61,177,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_SURFACEEDIT_US2400, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 264
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 71
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_SURFACEEDIT_US2400 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (Australia) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENA)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,2,1,0
+ PRODUCTVERSION 1,2,1,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0xbL
+#else
+ FILEFLAGS 0xaL
+#endif
+ FILEOS 0x40000L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "0c0904b0"
+        BEGIN
+            VALUE "FileDescription", "Reaper control surface plugin for Tascam US-2400"
+            VALUE "FileVersion", "1.2.1.0"
+            VALUE "InternalName", "reaper_csurf_us2400.dll"
+            VALUE "LegalCopyright", "Copyright (C) 2016"
+            VALUE "OriginalFilename", "reaper_csurf_us2400.dll"
+            VALUE "ProductName", "Tascam US-2400 (M-Key & VU Support) for Reaper"
+            VALUE "ProductVersion", "1.2.1.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0xc09, 1200
+    END
+END
+
+#endif    // English (Australia) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
