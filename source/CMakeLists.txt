@@ -7,7 +7,7 @@ add_library(
     CSurf_US2400_stripoverlay.cpp
     csurf_utils.cpp
 )
-target_sources(reaper_plugin PRIVATE res.rc)
+target_sources(reaper_plugin PRIVATE)
 
 target_include_directories(
   reaper_plugin SYSTEM PRIVATE
@@ -18,6 +18,8 @@ target_include_directories(
 target_link_libraries(${PROJECT_NAME} reaper_plugin)
 
 if(NOT WIN32)
+  find_package(SWELL REQUIRED)
+  
   add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/res.rc_mac_dlg
     COMMAND ${SWELL_RESGEN} ${CMAKE_CURRENT_SOURCE_DIR}/res.rc)
 
@@ -43,6 +45,5 @@ find_package(WDL REQUIRED)
 target_link_libraries(reaper_plugin WDL::WDL)
 
 if(NOT WIN32)
-  find_package(SWELL REQUIRED)
   target_link_libraries(reaper_plugin SWELL::swell)
 endif()
