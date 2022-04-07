@@ -1,6 +1,8 @@
 #include "CSurf_US2400_stripoverlay.h"
 #ifndef _WIN32
-	#include <X11/Xlib.h>
+	#ifndef APPLE
+		#include <X11/Xlib.h>
+	#endif
 #endif
 
 // float to int macro
