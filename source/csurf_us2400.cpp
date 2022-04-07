@@ -2086,8 +2086,8 @@ public:
     // update encoders for width in pan mode
     if (m_pan)
       for (char ch_id = 0; ch_id < 24; ch_id++) 
-        if (m_flip) MySetSurface_UpdateFader(ch_id);
-        else MySetSurface_UpdateEncoder(ch_id);
+        if (m_flip) { MySetSurface_UpdateFader(ch_id); }
+        else { MySetSurface_UpdateEncoder(ch_id); }
 
 	if (btn_state) hlpHandler->SetQkey(2);
     else hlpHandler->SetQkey(0);
@@ -2332,8 +2332,8 @@ public:
     int ch_id = Cnv_MediaTrackToChannelID(rpr_tk);
 
     if ( (ch_id >= 0) && (ch_id <= 24) )
-      if (!m_flip) MySetSurface_UpdateFader(ch_id);
-      else if (ch_id <= 23) MySetSurface_UpdateEncoder(ch_id);
+      if (!m_flip) { MySetSurface_UpdateFader(ch_id); }
+      else if (ch_id <= 23) { MySetSurface_UpdateEncoder(ch_id); }
   } // SetSurfaceVolume
   
 
@@ -2342,8 +2342,8 @@ public:
     int ch_id = Cnv_MediaTrackToChannelID(rpr_tk);
 
     if ( (ch_id >= 0) && (ch_id <= 24) )
-      if (m_flip) MySetSurface_UpdateFader(ch_id);
-      else if (ch_id <= 23) MySetSurface_UpdateEncoder(ch_id);
+      if (m_flip) { MySetSurface_UpdateFader(ch_id); }
+      else if (ch_id <= 23) { MySetSurface_UpdateEncoder(ch_id); }
   } // SetSurfacePan
   
 
