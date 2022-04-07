@@ -37,7 +37,7 @@ if(WIN32)
    target_link_libraries(reaper_plugin winmm)
 elseif(APPLE)
   target_compile_options(reaper_plugin PUBLIC
-    -fsigned-char -fobjc-arc -Wextra -Wno-error=deprecated-declarations
+    -fsigned-char -fobjc-arc -Wno-error=deprecated-declarations
   )
 else()
   target_compile_options(reaper_plugin PUBLIC
