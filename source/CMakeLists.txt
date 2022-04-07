@@ -19,10 +19,10 @@ target_link_libraries(${PROJECT_NAME} reaper_plugin)
 
 if(NOT WIN32)
   add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/res.rc_mac_dlg
-    COMMAND ${CMAKE_SOURCE_DIR}/vendor/WDL/WDL/swell/swell_resgen.sh ${CMAKE_CURRENT_SOURCE_DIR}/res.rc)
+    COMMAND ${SWELL_RESGEN} ${CMAKE_CURRENT_SOURCE_DIR}/res.rc)
 
   add_custom_target( generate
-    ALL ${CMAKE_SOURCE_DIR}/vendor/WDL/WDL/swell/swell_resgen.sh ${CMAKE_CURRENT_SOURCE_DIR}/res.rc
+    ALL ${SWELL_RESGEN} ${CMAKE_CURRENT_SOURCE_DIR}/res.rc
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/res.rc)
 endif()
 
