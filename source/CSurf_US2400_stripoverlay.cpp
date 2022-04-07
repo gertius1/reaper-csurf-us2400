@@ -295,7 +295,7 @@ void CSurf_US2400_stripoverlay::Stp_OpenWindow(int chan_fx, int chan_par_offs, i
 				#ifdef __APPLE__
 					auto mainDisplayId = CGMainDisplayID();
 					stp_width = CGDisplayPixelsWide(mainDisplayId);
-					height = CGDisplayPixelsHigh(mainDisplayId);
+					auto height = CGDisplayPixelsHigh(mainDisplayId);
 					stp_y = height - stp_height;
 				#else
 					Display *dpy;
