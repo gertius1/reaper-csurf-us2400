@@ -1,6 +1,6 @@
 #include "CSurf_US2400_stripoverlay.h"
 #ifndef _WIN32
-	#ifndef APPLE
+	#ifndef __APPLE__
 		#include <X11/Xlib.h>
 	#endif
 #endif
