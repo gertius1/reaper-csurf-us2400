@@ -13,6 +13,7 @@ mark_as_advanced(SWELL_INCLUDE_DIR)
 
 set(SWELL_DIR "${SWELL_INCLUDE_DIR}/swell")
 set(SWELL_RESGEN "${SWELL_DIR}/swell_resgen.sh")
+find_package(PHP REQUIRED)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(SWELL REQUIRED_VARS SWELL_DIR)
