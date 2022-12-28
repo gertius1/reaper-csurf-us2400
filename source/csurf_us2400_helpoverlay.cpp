@@ -1,4 +1,11 @@
 #include "csurf_us2400_helpoverlay.h"
+#ifndef _WIN32
+	#ifndef __APPLE__
+		#include <X11/Xlib.h>
+	#else 
+		#include <CoreGraphics/CGDisplayConfiguration.h>
+	#endif
+#endif
 
 CSurf_US2400_helpoverlay* hlpHandler;
 
