@@ -602,15 +602,33 @@ void CSurf_US2400_helpoverlay::Hlp_ToggleWindow(bool isMeterMode)
 			RECT scr;
 			int width = 2 * hlp_margin + 2 * hlp_sep + 7 * hlp_grid + hlp_box_size;
 			int height = 2 * hlp_margin + 2 * hlp_sep + 6 * hlp_grid + hlp_box_size;
-
 			#ifdef _WIN32
 				SystemParametersInfo(SPI_GETWORKAREA, 0, &scr, 0);
 				int left = scr.right / 2 - width / 2;
 				int top = scr.bottom / 2 - height / 2;
+			#else
+				#ifdef __APPLE__
+					auto mainDisplayId = CGMainDisplayID();
+					int left = CGDisplayPixelsWide(mainDisplayId) / 2 - width / 2;
+					int top = CGDisplayPixelsHigh(mainDisplayId) / 2 - height / 2;
+				#else
+					Display *dpy;
+					int snum;
+					dpy = XOpenDisplay(0);
+					snum = DefaultScreen(dpy);
+					int left  = DisplayWidth(dpy, snum) / 2 - width / 2;
+					int top = DisplayHeight(dpy, snum) / 2 - width / 2;
+				#endif
+			#endif
+			#ifdef _WIN32
 				hlp_hwnd = CreateWindowEx(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_NOACTIVATE, "hlp", "US-2400 On-Screen Help", WS_POPUP | WS_BORDER, left, top, width, height, NULL, NULL, g_hInst, NULL);
 
 				SetLayeredWindowAttributes(hlp_hwnd, NULL, 220, LWA_ALPHA);				
 			#else
+				hlp_hwnd = CreateDialog(g_hInst, MAKEINTRESOURCE(0), nullptr, (WNDPROC)Hlp_WindowProc);
+				SetWindowLong(hlp_hwnd, GWL_STYLE, WS_CAPTION|WS_BORDER|WS_SYSMENU);
+				SetWindowText(hlp_hwnd, "US-2400 On-Screen Help");
+				SetWindowPos(hlp_hwnd, HWND_TOPMOST, left, top, width, height, SWP_SHOWWINDOW | SWP_NOCOPYBITS);
 			#endif
 		}
 
