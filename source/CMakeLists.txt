@@ -6,6 +6,7 @@ add_library(
     csurf_us2400.cpp
     CSurf_US2400_stripoverlay.cpp
     csurf_utils.cpp
+    res.rc
 )
 target_sources(reaper_plugin PRIVATE)
 
