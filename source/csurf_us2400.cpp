@@ -1830,6 +1830,7 @@ public:
       bool exists = false;
       bool isactive = true;
       bool ispre = false;
+      bool ismute = false;
 
       // active encoder? 
       if (!rpr_tk) 
@@ -1854,6 +1855,7 @@ public:
           isactive = true;
           int* send_mode = (int*)GetSetTrackSendInfo(rpr_tk, 0, send_id, "I_SENDMODE", NULL);
           if (*send_mode > 0) ispre = true;
+          ismute = *((bool*)GetSetTrackSendInfo(rpr_tk, 0, send_id, "B_MUTE", NULL));
         }
       }
 
@@ -1941,6 +1943,7 @@ public:
         {
           if (isactive) dot = true;
           if ((ispre) && (s_myblink)) dot = !dot;
+          if (ismute) dot = false;
 
         // other modes: phase / rec arm
         } else
