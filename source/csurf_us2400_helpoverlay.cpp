@@ -38,6 +38,7 @@ CSurf_US2400_helpoverlay::CSurf_US2400_helpoverlay() {
 
 	hlp_hwnd = NULL;
 
+#ifdef _WIN32
 	WNDCLASSEX hlp_class;
 	hlp_class.cbSize = sizeof(WNDCLASSEX);
 	hlp_class.style = 0;
@@ -53,7 +54,7 @@ CSurf_US2400_helpoverlay::CSurf_US2400_helpoverlay() {
 	hlp_class.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
 	RegisterClassEx(&hlp_class);
-
+#endif
 	hlpHandler = this;
 }
 
