@@ -373,7 +373,12 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 
 			// get info
 
-			tk = csurf_utils::Cnv_ChannelIDToMediaTrack(ch, s_ch_offset);
+			if (m_chan)
+				tk = chan_rpr_tk;
+			else
+				tk = csurf_utils::Cnv_ChannelIDToMediaTrack(ch, s_ch_offset);
+
+
 			if (tk != NULL)
 			{
 				// track number
