@@ -38,20 +38,21 @@ CSurf_US2400_helpoverlay::CSurf_US2400_helpoverlay() {
 
 	hlp_hwnd = NULL;
 
-	// hlp_class.cbSize = sizeof(WNDCLASSEX);
-	// hlp_class.style = 0;
-	// hlp_class.lpfnWndProc = (WNDPROC)Hlp_WindowProc;
-	// hlp_class.cbClsExtra = 0;
-	// hlp_class.cbWndExtra = 0;
-	// hlp_class.hInstance = g_hInst;
-	// hlp_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	// hlp_class.hCursor = LoadCursor(NULL, IDC_ARROW);
-	// hlp_class.hbrBackground = CreateSolidBrush(RGB(60, 60, 60));
-	// hlp_class.lpszMenuName = NULL;
-	// hlp_class.lpszClassName = "hlp";
-	// hlp_class.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	WNDCLASSEX hlp_class;
+	hlp_class.cbSize = sizeof(WNDCLASSEX);
+	hlp_class.style = 0;
+	hlp_class.lpfnWndProc = (WNDPROC)Hlp_WindowProc;
+	hlp_class.cbClsExtra = 0;
+	hlp_class.cbWndExtra = 0;
+	hlp_class.hInstance = g_hInst;
+	hlp_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	hlp_class.hCursor = LoadCursor(NULL, IDC_ARROW);
+	hlp_class.hbrBackground = CreateSolidBrush(RGB(60, 60, 60));
+	hlp_class.lpszMenuName = NULL;
+	hlp_class.lpszClassName = "hlp";
+	hlp_class.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
-	// RegisterClassEx(&hlp_class);
+	RegisterClassEx(&hlp_class);
 
 	hlpHandler = this;
 }
