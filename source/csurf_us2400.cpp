@@ -317,7 +317,11 @@ class CSurf_US2400 : public IReaperControlSurface
         if (m_aux > 0) MyCSurf_AddSwitchAuxSend(rpr_tk, m_aux);
         else MyCSurf_SwitchPhase(rpr_tk);
 
-      } else if (q_shift)
+      } else if (q_mkey)
+      {
+          if (m_aux > 0) MyCSurf_ToggleMuteAuxSend(rpr_tk, m_aux);
+      }
+      else if (q_shift)
       {
         if (m_aux > 0) MyCSurf_RemoveAuxSend(rpr_tk, m_aux);
         else CSurf_OnRecArmChange(rpr_tk, -1);
@@ -2617,6 +2621,68 @@ public:
 
     GetSetObjectState(aux_tk, chunk_wdl.Get()); 
   } // MyCSurf_RemoveAuxSend
+
+
+  void MyCSurf_ToggleMuteAuxSend(MediaTrack* rpr_tk, int aux)
+  {
+      int tk_id = (int)round(GetMediaTrackInfo_Value(rpr_tk, "IP_TRACKNUMBER") - 1);
+      MediaTrack* aux_tk = Utl_FindAux(aux);
+
+      char* chunk = GetSetObjectState(aux_tk, "");
+      WDL_String chunk_wdl = WDL_String(chunk);
+
+      // search for existing sends
+      char search[90];
+      char insert[90];
+      int mutePos = 5;  //mute status position in string
+      char* pch;
+      int muteStatus;
+
+      int i;
+
+      sprintf(search, "AUXRECV %d", tk_id);
+      char* auxSubstr = strstr(chunk, search);
+      if (auxSubstr) // track has aux
+      {
+          // get aux mute status
+          //Splitting string into tokens
+          search[0] = '\0'; //reset string for later use
+          insert[0] = '\0'; //init string for use with strcat
+
+          pch = strtok(auxSubstr, " ");
+
+          for (i=0; i<mutePos; i++)
+          {
+              strcat(search, pch);
+              strcat(insert, pch);
+              pch = strtok(NULL, " ");
+              strcat(search, " ");
+              strcat(insert, " ");
+          }
+
+          muteStatus = atoi(pch);
+          
+          // toggle aux mute status
+          if (muteStatus == 0)
+          {
+              strcat(search, "0");
+              strcat(insert, "1");
+          }
+          else if (muteStatus == 1)
+          {
+              strcat(search, "1");
+              strcat(insert, "0");
+          }
+          
+          // write aux mute status
+          chunk_wdl = Utl_Chunk_Replace(chunk_wdl, WDL_String(search), WDL_String(insert));
+          GetSetObjectState(aux_tk, chunk_wdl.Get());
+      }
+
+      FreeHeapPtr(chunk);
+
+      
+  } //MyCSurf_ToggleMuteAuxSend
 
 
   void MyCSurf_SelectMaster() 
