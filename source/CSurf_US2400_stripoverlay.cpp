@@ -57,6 +57,8 @@ CSurf_US2400_stripoverlay::CSurf_US2400_stripoverlay() {
 
 	// Display
 	stp_hwnd = NULL;
+
+#ifdef _WIN32
 	WNDCLASSEX stp_class;
 	stp_class.cbSize = sizeof(WNDCLASSEX);
 	stp_class.style = 0;
@@ -72,7 +74,7 @@ CSurf_US2400_stripoverlay::CSurf_US2400_stripoverlay() {
 	stp_class.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
 	RegisterClassEx(&stp_class);
-
+#endif
 	stpHandler = this;
 }
 
