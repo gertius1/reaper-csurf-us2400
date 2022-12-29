@@ -52,22 +52,26 @@ CSurf_US2400_stripoverlay::CSurf_US2400_stripoverlay() {
 	stp_chan = false;
 	stp_flip = false;
 
+	for (int i = 0; i < 24; i++)
+		stp_colors[i] = 0;
+
 	// Display
 	stp_hwnd = NULL;
-	// stp_class.cbSize = sizeof(WNDCLASSEX);
-	// stp_class.style = 0;
-	// stp_class.lpfnWndProc = (WNDPROC)Stp_WindowProc;
-	// stp_class.cbClsExtra = 0;
-	// stp_class.cbWndExtra = 0;
-	// stp_class.hInstance = g_hInst;
-	// stp_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	// stp_class.hCursor = LoadCursor(NULL, IDC_ARROW);
-	// stp_class.hbrBackground = CreateSolidBrush(RGB(60, 60, 60));
-	// stp_class.lpszMenuName = NULL;
-	// stp_class.lpszClassName = "stp";
-	// stp_class.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	WNDCLASSEX stp_class;
+	stp_class.cbSize = sizeof(WNDCLASSEX);
+	stp_class.style = 0;
+	stp_class.lpfnWndProc = (WNDPROC)Stp_WindowProc;
+	stp_class.cbClsExtra = 0;
+	stp_class.cbWndExtra = 0;
+	stp_class.hInstance = g_hInst;
+	stp_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	stp_class.hCursor = LoadCursor(NULL, IDC_ARROW);
+	stp_class.hbrBackground = CreateSolidBrush(RGB(60, 60, 60));
+	stp_class.lpszMenuName = NULL;
+	stp_class.lpszClassName = "stp";
+	stp_class.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
-	// RegisterClassEx(&stp_class);
+	RegisterClassEx(&stp_class);
 
 	stpHandler = this;
 }
@@ -147,9 +151,9 @@ void CSurf_US2400_stripoverlay::Stp_Paint(HWND hwnd)
 
 				SetTextColor(hdc, RGB(150, 150, 150));
 				#ifdef _WIN32
-					DrawText(hdc, stp_strings[49].Get(), -1, &rect, DT_CENTER | DT_WORDBREAK | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS);
+					DrawText(hdc, stp_strings[48].Get(), -1, &rect, DT_CENTER | DT_WORDBREAK | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS);
 				#else
-					DrawText(hdc, stp_strings[49].Get(), -1, &rect, DT_CENTER | DT_WORDBREAK | DT_END_ELLIPSIS );
+					DrawText(hdc, stp_strings[48].Get(), -1, &rect, DT_CENTER | DT_WORDBREAK | DT_END_ELLIPSIS );
 				#endif
 			}
 		}
@@ -454,8 +458,8 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 				}
 
 				TrackFX_GetFXName(chan_rpr_tk, chan_fx, buffer, 64);
-				stp_strings[49] = WDL_String(buffer);
-				stp_strings[49] = csurf_utils::Utl_Alphanumeric(stp_strings[49]);
+				stp_strings[48] = WDL_String(buffer);
+				stp_strings[48] = csurf_utils::Utl_Alphanumeric(stp_strings[48]);
 			}
 
 			// keep only alphanumeric, replace everything else with space
