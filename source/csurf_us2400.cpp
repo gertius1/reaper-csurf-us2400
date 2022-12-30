@@ -317,10 +317,7 @@ class CSurf_US2400 : public IReaperControlSurface
         if (m_aux > 0) MyCSurf_AddSwitchAuxSend(rpr_tk, m_aux);
         else MyCSurf_SwitchPhase(rpr_tk);
 
-      } else if (q_mkey)
-      {
-          if (m_aux > 0) MyCSurf_ToggleMuteAuxSend(rpr_tk, m_aux);
-      }
+      } 
       else if (q_shift)
       {
         if (m_aux > 0) MyCSurf_RemoveAuxSend(rpr_tk, m_aux);
@@ -350,7 +347,11 @@ class CSurf_US2400 : public IReaperControlSurface
     MediaTrack* rpr_tk = csurf_utils::Cnv_ChannelIDToMediaTrack(ch_id, s_ch_offset);
 
     if (q_fkey) MyCSurf_ToggleMute(rpr_tk, true);
-    else if (q_shift) MyCSurf_Chan_ToggleAllFXBypass(ch_id);
+    else if (q_shift)
+    {
+        if (m_aux > 0) MyCSurf_ToggleMuteAuxSend(rpr_tk, m_aux);
+        else MyCSurf_Chan_ToggleAllFXBypass(ch_id);
+    }
     else MyCSurf_ToggleMute(rpr_tk, false);
   } // OnTrackMute
 
