@@ -973,14 +973,17 @@ class CSurf_US2400 : public IReaperControlSurface
 
   int Cnv_AuxIDToSendID(int ch_id, char aux)
   {
+    //returns number of aux sends, ignores hw sends
     char search[256];
     char sendname[256];
     sprintf(search, AUXSTRING, aux);
 
     MediaTrack* rpr_tk = csurf_utils::Cnv_ChannelIDToMediaTrack(ch_id, s_ch_offset);
-    int all_sends = GetTrackNumSends(rpr_tk, 0);
+    int aux_sends = GetTrackNumSends(rpr_tk, 0);
     // hardware outputs count for GetTrackSendName, too
-    all_sends += GetTrackNumSends(rpr_tk, 1);
+    int hw_sends = GetTrackNumSends(rpr_tk, 1);
+
+    int all_sends = aux_sends + hw_sends;
 
     for (int s = 0; s < all_sends; s++)
     {
@@ -994,7 +997,7 @@ class CSurf_US2400 : public IReaperControlSurface
         c++;
       }
 
-      if (strstr(sendname, search)) return s;
+      if (strstr(sendname, search)) return (s-hw_sends);
     }
     
     return -1;
