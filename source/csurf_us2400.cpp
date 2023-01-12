@@ -398,7 +398,7 @@ class CSurf_US2400 : public IReaperControlSurface
     
     } else if ( (m_aux > 0) && (m_flip) ) 
     { // only aux #x and flip: has send #x?
-      int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+      int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
       if (send_id == -1) isactive = false;
     }
   
@@ -432,7 +432,7 @@ class CSurf_US2400 : public IReaperControlSurface
           } else if (m_aux > 0) 
           { // flip + aux -> send Vol
 
-            int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+            int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
             if (send_id != -1)
             {
 
@@ -504,7 +504,7 @@ class CSurf_US2400 : public IReaperControlSurface
 
     } else if (m_aux > 0) 
     { // only aux #x: has send #x?
-      int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+      int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
       if (send_id == -1) isactive = false;
     }
 
@@ -514,7 +514,7 @@ class CSurf_US2400 : public IReaperControlSurface
       {
         if (m_aux > 0)
         { // aux & flip -> send pan
-          int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+          int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
           if (send_id != -1)
           {
             if (q_shift) d_value = 0.0; // DEFAULT
@@ -588,7 +588,7 @@ class CSurf_US2400 : public IReaperControlSurface
        
         } else if (m_aux > 0)
         {
-          int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+          int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
           if (send_id != -1)
           {
             // aux & no flip -> send-level
@@ -971,7 +971,7 @@ class CSurf_US2400 : public IReaperControlSurface
   } // Cnv_MediaTrackToChannelID
 
 
-  int Cnv_AuxIDToSendID(int ch_id, char aux)
+  int Cnv_AuxIDToSendID(int ch_id, char aux, bool consider_hw_sends)
   {
     //returns number of aux sends, ignores hw sends
     char search[256];
@@ -997,7 +997,14 @@ class CSurf_US2400 : public IReaperControlSurface
         c++;
       }
 
-      if (strstr(sendname, search)) return (s-hw_sends);
+
+      if (strstr(sendname, search))
+      {
+          if (consider_hw_sends)
+              return s;
+          else
+              return s - hw_sends;
+      }
     }
     
     return -1;
@@ -1725,7 +1732,7 @@ public:
     } else if ( (m_aux > 0) && (m_flip) ) 
     { // only aux #x and flip: has send #x?
       
-      int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+      int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
       if (send_id == -1) isactive = false;
     }
 
@@ -1757,7 +1764,7 @@ public:
 
           } else if (m_aux > 0)
           { // flip + aux -> send Vol
-            int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+            int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
             if (send_id != -1)
             {
               d_value = GetTrackSendUIVolPan(rpr_tk, send_id, &d_value, NULL);
@@ -1852,7 +1859,7 @@ public:
 
       } else if ((m_aux > 0) && (rpr_tk != NULL))
       { // only aux #x: has send #x?
-        int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+        int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, false);
         isactive = false;
         if (send_id != -1) 
         {
@@ -1877,7 +1884,7 @@ public:
         {
           if (m_aux > 0)
           { // flip + aux -> send Pan
-            int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+            int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
             if (send_id != -1)
             {
               GetTrackSendUIVolPan(rpr_tk, send_id, NULL, &d_value);
@@ -1904,7 +1911,7 @@ public:
          
           } else if (m_aux > 0)
           { // aux -> send level
-            int send_id = Cnv_AuxIDToSendID(ch_id, m_aux);
+            int send_id = Cnv_AuxIDToSendID(ch_id, m_aux, true);
             if (send_id != -1)
             {
               GetTrackSendUIVolPan(rpr_tk, send_id, &d_value, NULL);
