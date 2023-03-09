@@ -6,6 +6,8 @@
 ** No license, no guarantees.
 */
 
+#include <string>
+#include <fstream>
 
 ////// PREFERENCES //////
 
@@ -305,6 +307,8 @@ class CSurf_US2400 : public IReaperControlSurface
   //////// EVENTS (called by MIDIin) //////
 
 
+
+
   // TRACK ELEMENTS
 
   void OnTrackSel(char ch_id)
@@ -422,7 +426,7 @@ class CSurf_US2400 : public IReaperControlSurface
           { // flip & chan -> fx param
 
             double min, max;
-            d_value = TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
+            d_value = MyCSurf_TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
 
             if (q_fkey) d_value = min; // MINIMUM
             else if (q_shift) d_value = max; // MAXIMUM
@@ -546,7 +550,7 @@ class CSurf_US2400 : public IReaperControlSurface
           double min, max, step, fine, coarse; 
           bool toggle;
           bool has_steps = false;
-          d_value = TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
+          d_value = MyCSurf_TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
           
           // most of the time this fails because not implemented by plugins!
           //if ( ( TrackFX_GetParameterStepSizes(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &step, &fine, &coarse, &toggle) ) )
@@ -1555,6 +1559,21 @@ public:
   } // ~CSurf_US2400()
 
 
+    // FX Param Wrapper Functions (for reordering params)
+
+
+  double MyCSurf_TrackFX_GetParam(MediaTrack* tr, int fx, int param, double* minval, double* maxval)
+  {
+      int remappedParam = csurf_utils::TrackFX_RemapParam(param);
+      return TrackFX_GetParam(tr, fx, remappedParam, minval, maxval);
+  }//MyCSurf_TrackFX_GetParam
+
+  bool MyCSurf_TrackFX_SetParam(MediaTrack* tr, int fx, int param, double val)
+  {
+      int remappedParam = csurf_utils::TrackFX_RemapParam(param);
+      return TrackFX_SetParam(tr, fx, remappedParam, val);
+  }//MyCSurf_TrackFX_GetParam
+
 
   ////// CUSTOM SURFACE UPDATES //////
 
@@ -1760,7 +1779,7 @@ public:
           { // flip & chan -> fx param
 
             double min, max;
-            d_value = TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
+            d_value = MyCSurf_TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
             value = Cnv_FXParamToFader(min, max, d_value);
 
           } else if (m_aux > 0)
@@ -1905,7 +1924,7 @@ public:
           { // chan -> fx_param (para_offset checked above)
 
             double min, max;
-            d_value = TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
+            d_value = MyCSurf_TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
 
             value = Cnv_FXParamToEncoder(min, max, d_value);
             if (m_cfg_flags&csurf_utils::CONFIG_FLAG_METER_MODE) value += 0x20; // bar mode
@@ -2770,11 +2789,13 @@ public:
 
     if (fx_id >= amount_fx) fx_id = 0;
     else if (fx_id < 0) fx_id = amount_fx - 1;
-    
+
     chan_fx = fx_id;
     TrackFX_Show(chan_rpr_tk, chan_fx, 2); // hide floating window
-    TrackFX_Show(chan_rpr_tk, chan_fx, 1); // show chain window
+    TrackFX_Show(chan_rpr_tk, chan_fx, 0); // show chain window
     TrackFX_SetOpen(chan_rpr_tk, chan_fx, true);
+
+    csurf_utils::PrepareParamMapArray(chan_rpr_tk, chan_fx);
 
     // reset param offset
     chan_par_offs = 0;
@@ -2907,7 +2928,7 @@ public:
   {
     char ch_id = Cnv_MediaTrackToChannelID(rpr_tk);
 
-    TrackFX_SetParam(rpr_tk, fx_id, para_id, value);
+    MyCSurf_TrackFX_SetParam(rpr_tk, fx_id, para_id, value);
 
     if (m_flip) MySetSurface_UpdateFader(ch_id);
     else MySetSurface_UpdateEncoder(ch_id);

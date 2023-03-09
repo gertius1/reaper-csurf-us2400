@@ -425,17 +425,18 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 			if (ch + chan_par_offs < fx_amount)
 			{
 				// fx param value
-				TrackFX_GetFormattedParamValue(tk, chan_fx, ch + chan_par_offs, buffer, 64);
+				int remappedParam = csurf_utils::TrackFX_RemapParam(ch + chan_par_offs);
+				TrackFX_GetFormattedParamValue(tk, chan_fx, remappedParam, buffer, 64);
 				if (strlen(buffer) == 0)
 				{
 					double min, max;
-					double par = TrackFX_GetParam(tk, chan_fx, ch + chan_par_offs, &min, &max);
+					double par = TrackFX_GetParam(tk, chan_fx, remappedParam, &min, &max);
 					sprintf(buffer, "%.4f", par);
 				}
 				par_val = WDL_String(buffer);
 
 				// fx param name
-				TrackFX_GetParamName(tk, chan_fx, ch + chan_par_offs, buffer, 64);
+				TrackFX_GetParamName(tk, chan_fx, remappedParam, buffer, 64);
 				par_name = WDL_String(buffer);
 
 			}

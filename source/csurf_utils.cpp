@@ -1,7 +1,11 @@
 #include "csurf_utils.h"
 
+#include <string>
+#include <fstream>
 
 const int csurf_utils::CONFIG_FLAG_METER_MODE = 1;
+int csurf_utils::paramNums[MAX_PARAM_NUMBERS];
+
 
 void csurf_utils::parseParams(const char* str, int parms[5])
 {
@@ -65,4 +69,57 @@ int csurf_utils::SizeTToInt(size_t data)
     if (data > std::numeric_limits<unsigned int>::max())
         throw std::logic_error("Invalid cast.");
     return static_cast<int>(data);
+}
+
+void csurf_utils::PrepareParamMapArray(MediaTrack* tr, int fxNr)
+{
+	for (int i = 0; i < MAX_PARAM_NUMBERS; i++)
+		paramNums[i] = i;
+
+#ifdef _WIN32
+	const int FXNAME_SIZE = 64;
+	char fxNameBuf[FXNAME_SIZE];
+
+	char path[2048];
+	GetModuleFileNameA(g_hInst, path, 2048);
+	std::string::size_type pos = std::string(path).find_last_of("\\/");
+
+
+	TrackFX_GetFXName(tr, fxNr, fxNameBuf, FXNAME_SIZE);
+	int trackFXNumParams = TrackFX_GetNumParams(tr, fxNr);
+
+	//if file with fx name exists
+	std::string fxName(fxNameBuf);
+	fxName = fxName.substr(fxName.find(" ") + 1, std::string::npos);
+	fxName = fxName.append(".txt");
+	fxName.insert(0, "paramMap_");
+	fxName.insert(0, "\\");
+	fxName.insert(0, std::string(path).substr(0, pos));
+
+	std::ifstream inFile;
+	inFile.open(fxName.c_str());
+
+	int i = 0;
+	if (inFile.is_open())
+	{
+		while (true) {
+			inFile >> paramNums[i];
+			if (paramNums[i] >= trackFXNumParams-1)
+				paramNums[i] = trackFXNumParams-1;
+
+			if (inFile.eof()) break;
+			if (i >= MAX_PARAM_NUMBERS) break; //prevent array overflow
+			i++;
+		}
+
+		inFile.close(); // CLose input file
+	}
+	
+#endif
+}
+
+
+int csurf_utils::TrackFX_RemapParam(int inParamNr)
+{
+	return paramNums[inParamNr];
 }
