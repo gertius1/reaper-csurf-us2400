@@ -28,7 +28,7 @@
 // Encoder resolution for pan, range:  -1 > +1
 #define ENCRESPAN 0.01 
 // Encoder resolution for fx param, in divisions of range (e.g. -1 > +1, reso 100 > stepsize 0.02)
-#define ENCRESFX 300
+#define ENCRESFX 100
 #define ENCRESFXFINE 3000
 #define ENCRESFXTOGGLE 1
 // How long will encoders be considered touch, in run circles (15 Hz -> 3 circles = 200ms)
@@ -549,7 +549,8 @@ class CSurf_US2400 : public IReaperControlSurface
           d_value = TrackFX_GetParam(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &min, &max);
           
           // most of the time this fails because not implemented by plugins!
-          if ( ( TrackFX_GetParameterStepSizes(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &step, &fine, &coarse, &toggle) ) )
+          //if ( ( TrackFX_GetParameterStepSizes(chan_rpr_tk, chan_fx, chan_par_offs + ch_id, &step, &fine, &coarse, &toggle) ) )
+          if(false)
           {
             if (toggle)
             {
