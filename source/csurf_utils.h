@@ -14,7 +14,7 @@ public:
 	static WDL_String Utl_Alphanumeric(WDL_String in_str);
 	static int SizeTToInt(size_t data);
 	static void PrepareParamMapArray(MediaTrack* tr, int fxNr);
-	static int csurf_utils::TrackFX_RemapParam(int inParamNr);
+	static int TrackFX_RemapParam(int inParamNr);
 
 
 private:
