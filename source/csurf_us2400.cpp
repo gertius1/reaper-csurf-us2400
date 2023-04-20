@@ -1452,8 +1452,7 @@ public:
   CSurf_US2400(int indev, int outdev, int cflags, int *errStats)
   {
     ////// GLOBAL VARS //////
-	  hlpHandler = new CSurf_US2400_helpoverlay();
-	  stpHandler = new CSurf_US2400_stripoverlay();
+
     m_midi_in_dev = indev;
     m_midi_out_dev = outdev;
 
@@ -1542,6 +1541,9 @@ public:
     }
 
     if (m_midiin) m_midiin->start();
+
+    hlpHandler = new CSurf_US2400_helpoverlay();
+    stpHandler = new CSurf_US2400_stripoverlay(m_midiout);
   } // CSurf_US2400()
 
 

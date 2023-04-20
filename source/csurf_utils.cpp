@@ -66,7 +66,7 @@ WDL_String csurf_utils::Utl_Alphanumeric(WDL_String in_str)
 
 int csurf_utils::SizeTToInt(size_t data)
 {
-    if (data > std::numeric_limits<unsigned int>::max())
+    if (data > (std::numeric_limits<unsigned int>::max)())
         throw std::logic_error("Invalid cast.");
     return static_cast<int>(data);
 }

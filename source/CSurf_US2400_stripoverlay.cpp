@@ -34,7 +34,8 @@ LRESULT CALLBACK Stp_WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-CSurf_US2400_stripoverlay::CSurf_US2400_stripoverlay() {
+CSurf_US2400_stripoverlay::CSurf_US2400_stripoverlay(midi_Output* midiout) {
+	m_midiout = midiout;
 	stp_repaint = false;
 	stp_width = -1;
 	stp_height = -1;
@@ -474,9 +475,76 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 			stp_strings[ch + 24] = csurf_utils::Utl_Alphanumeric(stp_strings[ch + 24]);
 
 			stp_repaint = true;
+			//sendMidi();
 		}
 	}
 } // Stp_Update
+
+void CSurf_US2400_stripoverlay::sendMidi()
+{
+	int ch = 0;
+	//int C4_displayNum;
+	//int offset;
+	int line;
+
+	//unsigned char messBuf[15] = { '0xF0','0x00', '0x00', '0x66', '0x17', '0x30', '0x38', '0x4C','0x35','0x30', '0x52', '0x35', '0x30', '0x20', '0xF7'};
+	
+	unsigned char messBuf[16];
+	messBuf[0] = 0xF0;
+	messBuf[1] = 0x00;
+	messBuf[2] = 0x00;
+	messBuf[3] = 0x66;
+	messBuf[4] = 0x17;
+
+	for (ch = 0; ch < 24; ch++)
+	{
+		for (line = 0; line < 2; line++)
+		{
+			messBuf[5] = ch;
+			messBuf[6] = line;
+			memcpy(messBuf + 7, stp_strings[ch + (24 * line)].Get(), 8);
+			messBuf[15] = 0xF7;
+
+
+
+			if (m_midiout) {
+
+				MIDI_event_t msg;
+				msg.frame_offset = -1;
+				msg.size = 15;
+				memcpy(msg.midi_message, messBuf, sizeof(messBuf));
+				m_midiout->SendMsg(&msg, -1);
+			}
+		}
+	}
+
+
+	/* Mackie C4 like protocol
+	for (ch = 0; ch < 24; ch++)
+	{
+		for (line = 0; line < 2; line++)
+		{
+			C4_displayNum = 0x30 + ch / 8;
+			offset = (line * 0x38) + (ch % 8) * 7;
+			messBuf[5] = C4_displayNum;
+			messBuf[6] = offset;
+			memcpy(messBuf + 7, stp_strings[ch + (24 * line)].Get(), 7);
+			messBuf[14] = 0xF7;
+
+
+
+			if (m_midiout) {
+
+				MIDI_event_t msg;
+				msg.frame_offset = -1;
+				msg.size = 15;
+				memcpy(msg.midi_message, messBuf, sizeof(messBuf));
+				m_midiout->SendMsg(&msg, -1);
+			}
+		}
+	}
+	*/
+}
 
 
 void CSurf_US2400_stripoverlay::UpdateDisplay(int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_chan, bool m_flip) {

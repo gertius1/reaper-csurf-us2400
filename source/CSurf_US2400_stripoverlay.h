@@ -27,9 +27,11 @@ class CSurf_US2400_stripoverlay
 		bool stp_chan;
 		bool stp_flip;
 
+		midi_Output* m_midiout;
 	
 	public:
-		CSurf_US2400_stripoverlay();
+		CSurf_US2400_stripoverlay(midi_Output* midiout);
+		void sendMidi();
 		void UpdateDisplay(int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_chan, bool m_flip);
 		void Stp_CloseWindow();
 		void Stp_OpenWindow(int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_chan, bool m_flip);
