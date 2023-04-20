@@ -475,7 +475,9 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 			stp_strings[ch + 24] = csurf_utils::Utl_Alphanumeric(stp_strings[ch + 24]);
 
 			stp_repaint = true;
-			//sendMidi();
+
+			if (m_midiout)
+				sendMidi();
 		}
 	}
 } // Stp_Update

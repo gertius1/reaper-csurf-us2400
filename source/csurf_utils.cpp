@@ -7,18 +7,18 @@ const int csurf_utils::CONFIG_FLAG_METER_MODE = 1;
 int csurf_utils::paramNums[MAX_PARAM_NUMBERS];
 
 
-void csurf_utils::parseParams(const char* str, int parms[5])
+void csurf_utils::parseParams(const char* str, int parms[6])
 {
 	parms[0] = 0;
 	parms[1] = 9;
-	parms[2] = parms[3] = -1;
-	parms[4] = 0;
+	parms[2] = parms[3] = parms[4] = -1;
+	parms[5] = 0;
 
 	const char* p = str;
 	if (p)
 	{
 		int x = 0;
-		while (x < 5)
+		while (x < 6)
 		{
 			while (*p == ' ') p++;
 			if ((*p < '0' || *p > '9') && *p != '-') break;

@@ -6,9 +6,10 @@
 #define IDC_CHECK_METERMODE             1000
 #define IDC_COMBO_MIDI_IN               1001
 #define IDC_COMBO_MIDI_OUT              1002
-#define IDC_CHECK_BANK_SWITCH           1003
-#define IDC_CHECK_BANK_SWITCH2          1004
-#define IDC_CHECK_NO_FLASHING           1004
+#define IDC_COMBO_MIDI_OUT_DISPLAY      1003
+#define IDC_CHECK_BANK_SWITCH           1004
+#define IDC_CHECK_BANK_SWITCH2          1005
+#define IDC_CHECK_NO_FLASHING           1005
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

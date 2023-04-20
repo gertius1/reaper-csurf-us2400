@@ -333,6 +333,7 @@ midi_Output *CreateThreadedMIDIOutput(midi_Output *output); // returns null on n
     if (call == CSURF_EXT_MIDI_DEVICE_REMAP) { \
       if ((int)(INT_PTR)parm1 == 0 && m_midi_in_dev == (int)(INT_PTR)parm2) { m_midi_in_dev = (int)(INT_PTR)parm3; return 1; }  \
       else if ((int)(INT_PTR)parm1 == 1 && m_midi_out_dev == (int)(INT_PTR)parm2) { m_midi_out_dev = (int)(INT_PTR)parm3; return 1; } \
+      else if ((int)(INT_PTR)parm1 == 2 && m_midi_out_dev_disp == (int)(INT_PTR)parm2) { m_midi_out_dev_disp = (int)(INT_PTR)parm3; return 1; } \
     }
 
 

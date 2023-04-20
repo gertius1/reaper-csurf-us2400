@@ -104,9 +104,10 @@ if ( ((fabs(a) - fabs(b)) < prec) && ((fabs(a) - fabs(b)) > (0 - prec)) )
 
 class CSurf_US2400 : public IReaperControlSurface
 {
-  int m_midi_in_dev,m_midi_out_dev;
+  int m_midi_in_dev,m_midi_out_dev, m_midi_out_dev_disp;
   int m_offset, m_size;
   midi_Output *m_midiout;
+  midi_Output* m_midiout_disp;
   midi_Input *m_midiin;
   int m_cfg_flags;  // config_flag_fader_touch_mode etc
 
@@ -1449,12 +1450,13 @@ public:
 
   ////// CONSTRUCTOR / DESTRUCTOR //////
 
-  CSurf_US2400(int indev, int outdev, int cflags, int *errStats)
+  CSurf_US2400(int indev, int outdev, int outdev_disp, int cflags, int *errStats)
   {
     ////// GLOBAL VARS //////
 
     m_midi_in_dev = indev;
     m_midi_out_dev = outdev;
+    m_midi_out_dev_disp = outdev_disp;
 
     m_cfg_flags = cflags;
 
@@ -1533,17 +1535,21 @@ public:
     // create midi hardware access
     m_midiin = m_midi_in_dev >= 0 ? CreateMIDIInput(m_midi_in_dev) : NULL;
     m_midiout = m_midi_out_dev >= 0 ? CreateThreadedMIDIOutput( CreateMIDIOutput(m_midi_out_dev, false, NULL) ) : NULL;
+    m_midiout_disp = m_midi_out_dev_disp >= 0 ? CreateThreadedMIDIOutput(CreateMIDIOutput(m_midi_out_dev_disp, false, NULL)) : NULL;
+
 
     if (errStats)
     {
       if (m_midi_in_dev >=0  && !m_midiin) *errStats|=1;
       if (m_midi_out_dev >=0  && !m_midiout) *errStats|=2;
+      if (m_midi_out_dev_disp >= 0 && !m_midiout_disp) *errStats |= 3;
+
     }
 
     if (m_midiin) m_midiin->start();
 
     hlpHandler = new CSurf_US2400_helpoverlay();
-    stpHandler = new CSurf_US2400_stripoverlay(m_midiout);
+    stpHandler = new CSurf_US2400_stripoverlay(m_midiout_disp);
   } // CSurf_US2400()
 
 
@@ -1556,6 +1562,7 @@ public:
     
     delete saved_sel;
 
+    delete m_midiout_disp;
     delete m_midiout;
     delete m_midiin;
   } // ~CSurf_US2400()
@@ -3309,8 +3316,11 @@ public:
     midi_in_name[0]=0;
     char midi_out_name[64];
     midi_out_name[0]=0;
-    GetMIDIOutputName(m_midi_in_dev,midi_in_name,sizeof(midi_in_name));
+    char midi_out_name_disp[64];
+    midi_out_name_disp[0] = 0;
+    GetMIDIInputName(m_midi_in_dev,midi_in_name,sizeof(midi_in_name));
     GetMIDIOutputName(m_midi_out_dev,midi_out_name,sizeof(midi_out_name));
+    GetMIDIOutputName(m_midi_out_dev_disp, midi_out_name_disp, sizeof(midi_out_name_disp));
     if(midi_in_name[0] == 0) {
       midiStr.Append("None");
     } else {
@@ -3322,6 +3332,13 @@ public:
     } else {
       midiStr.Append(midi_out_name);
     }
+    midiStr.Append("/");
+    if (midi_out_name_disp[0] == 0) {
+        midiStr.Append("None");
+    }
+    else {
+        midiStr.Append(midi_out_name_disp);
+    }
 
 
     sprintf(tmp," (%s) [%s]",vers.Get(),midiStr.Get());
@@ -3332,7 +3349,7 @@ public:
 
   const char *GetConfigString() // string of configuration data
   {
-    sprintf(configtmp,"0 0 %d %d %d",m_midi_in_dev,m_midi_out_dev,m_cfg_flags);      
+    sprintf(configtmp,"0 0 %d %d %d %d",m_midi_in_dev,m_midi_out_dev,m_midi_out_dev_disp, m_cfg_flags);      
     return configtmp;
   }
 
@@ -3508,9 +3525,9 @@ public:
 
 static IReaperControlSurface *createFunc(const char *type_string, const char *configString, int *errStats)
 {
-  int parms[5];
+  int parms[6];
   csurf_utils::parseParams(configString,parms);
-  return new CSurf_US2400(parms[2], parms[3], parms[4], errStats);
+  return new CSurf_US2400(parms[2], parms[3], parms[4], parms[5], errStats);
 }
 
 
@@ -3520,7 +3537,7 @@ static WDL_DLGRET dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
   {
     case WM_INITDIALOG:
       {
-        int parms[5];
+        int parms[6];
 		csurf_utils::parseParams((const char *)lParam,parms);
 
         int n=GetNumMIDIInputs();
@@ -3531,6 +3548,10 @@ static WDL_DLGRET dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         x=SendDlgItemMessage(hwndDlg,IDC_COMBO_MIDI_OUT,CB_ADDSTRING,0,(LPARAM)"None");
         SendDlgItemMessage(hwndDlg,IDC_COMBO_MIDI_OUT,CB_SETITEMDATA,x,-1);
 		if (-1 == parms[3]) SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT, CB_SETCURSEL, x, 0);
+
+        x = SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT_DISPLAY, CB_ADDSTRING, 0, (LPARAM)"None");
+        SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT_DISPLAY, CB_SETITEMDATA, x, -1);
+        if (-1 == parms[4]) SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT_DISPLAY, CB_SETCURSEL, x, 0);
 
         for (x = 0; x < n; x ++)
         {
@@ -3553,11 +3574,22 @@ static WDL_DLGRET dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (x == parms[3]) SendDlgItemMessage(hwndDlg,IDC_COMBO_MIDI_OUT,CB_SETCURSEL,a,0);
           }
         }
-		if (parms[4]&csurf_utils::CONFIG_FLAG_METER_MODE)
+        n = GetNumMIDIOutputs();
+        for (x = 0; x < n; x++)
+        {
+          char buf[512];
+          if (GetMIDIOutputName(static_cast<int>(x), buf, sizeof(buf)))
+          {
+              LRESULT a =        SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT_DISPLAY, CB_ADDSTRING, 0, (LPARAM)buf);
+                                 SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT_DISPLAY, CB_SETITEMDATA, a, x);
+              if (x == parms[4]) SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT_DISPLAY, CB_SETCURSEL, a, 0);
+          }
+        }
+		if (parms[5]&csurf_utils::CONFIG_FLAG_METER_MODE)
 			CheckDlgButton(hwndDlg, IDC_CHECK_METERMODE, BST_CHECKED);
-		if (parms[4]&CONFIG_FLAG_BANK_SWITCH)
+		if (parms[5]&CONFIG_FLAG_BANK_SWITCH)
 			CheckDlgButton(hwndDlg, IDC_CHECK_BANK_SWITCH, BST_CHECKED);
-		if (parms[4]&CONFIG_FLAG_NO_FLASH)
+		if (parms[5]&CONFIG_FLAG_NO_FLASH)
 			CheckDlgButton(hwndDlg, IDC_CHECK_NO_FLASHING, BST_CHECKED);
 	
       }
@@ -3568,11 +3600,13 @@ static WDL_DLGRET dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         char tmp[512];
 
         int offs=0, size=9;
-        LRESULT indev=-1, outdev=-1;
+        LRESULT indev=-1, outdev=-1, outdev_disp = -1;
         LRESULT r=SendDlgItemMessage(hwndDlg,IDC_COMBO_MIDI_IN,CB_GETCURSEL,0,0);
         if (r != CB_ERR) indev = SendDlgItemMessage(hwndDlg,IDC_COMBO_MIDI_IN,CB_GETITEMDATA,r,0);
         r=SendDlgItemMessage(hwndDlg,IDC_COMBO_MIDI_OUT,CB_GETCURSEL,0,0);
         if (r != CB_ERR)  outdev = SendDlgItemMessage(hwndDlg,IDC_COMBO_MIDI_OUT,CB_GETITEMDATA,r,0);
+        r = SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT_DISPLAY, CB_GETCURSEL, 0, 0);
+        if (r != CB_ERR)  outdev_disp = SendDlgItemMessage(hwndDlg, IDC_COMBO_MIDI_OUT_DISPLAY, CB_GETITEMDATA, r, 0);
 
 		int cflags = 0;
 		if (IsDlgButtonChecked(hwndDlg, IDC_CHECK_METERMODE))
@@ -3583,7 +3617,7 @@ static WDL_DLGRET dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			cflags |= CONFIG_FLAG_NO_FLASH;
 
 
-        sprintf(tmp,"0 0 %d %d %d",static_cast<int>(indev),static_cast<int>(outdev),cflags);
+        sprintf(tmp,"0 0 %d %d %d %d",static_cast<int>(indev),static_cast<int>(outdev), static_cast<int>(outdev_disp),cflags);
         lstrcpyn((char *)lParam, tmp,static_cast<int>(wParam));       
       }
     break;

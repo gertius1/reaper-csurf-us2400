@@ -58,11 +58,13 @@ BEGIN
     COMBOBOX        IDC_COMBO_MIDI_IN,81,4,181,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "MIDI output:",IDC_STATIC,23,23,56,8
     COMBOBOX        IDC_COMBO_MIDI_OUT,81,21,181,105,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "MIDI output LCD:", IDC_STATIC, 23, 40, 56, 8
+    COMBOBOX        IDC_COMBO_MIDI_OUT_DISPLAY, 81, 38, 181, 105, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Enable metermode (may cause problems)",IDC_CHECK_METERMODE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,39,177,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,57,177,10
     CONTROL         "Bank switch by 8, shift+button is 24 (old behaviour)",IDC_CHECK_BANK_SWITCH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,50,177,10
-    CONTROL         "Don't flash buttons",IDC_CHECK_NO_FLASHING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,61,177,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,68,177,10
+    CONTROL         "Don't flash buttons",IDC_CHECK_NO_FLASHING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,79,177,10
 END
 
 
