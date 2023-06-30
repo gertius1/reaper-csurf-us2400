@@ -357,7 +357,7 @@ void CSurf_US2400_stripoverlay::Stp_CloseWindow()
 } // Stp_CloseWindow
 
 
-void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_flip, bool m_chan)
+void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_flip, bool m_chan, bool updateHardwareLCD)
 {
 	if (stp_hwnd != NULL)
 	{
@@ -426,7 +426,7 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 			if (ch + chan_par_offs < fx_amount)
 			{
 				// fx param value
-				int remappedParam = csurf_utils::TrackFX_RemapParam(ch + chan_par_offs);
+				int remappedParam = abs(csurf_utils::TrackFX_RemapParam(ch + chan_par_offs));
 				TrackFX_GetFormattedParamValue(tk, chan_fx, remappedParam, buffer, 64);
 				if (strlen(buffer) == 0)
 				{
@@ -477,18 +477,66 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 			stp_repaint = true;
 
 			if (m_midiout)
-				sendMidi();
+				if (updateHardwareLCD)
+					sendMidi();
 		}
 	}
 } // Stp_Update
 
 void CSurf_US2400_stripoverlay::sendMidi()
 {
-	int ch = 0;
+	//int ch = 0;
 	//int C4_displayNum;
 	//int offset;
-	int line;
+	//int line;
 
+	//send string all at once? avoid overhead of sysex header and footer
+	//stp_strings[49]
+	//unpack at receiver
+	//do we update single channel at some point? then the original routine makes sense. but not, if always all chans are updated
+
+	/* Single big message protocol */
+
+	const char nrOfDigitsOnLCD = 6;
+	const int messageSize = 300;
+
+	unsigned char messBuf[messageSize];
+	messBuf[0] = 0xF0;
+	messBuf[1] = 0x00;
+	messBuf[2] = 0x00;
+	messBuf[3] = 0x66;
+	messBuf[4] = 0x17;
+	
+	for (int i = 0; i < 49; i++)
+	{
+		memcpy(messBuf + 5 + i * nrOfDigitsOnLCD, stp_strings[i].Get(), nrOfDigitsOnLCD); //only 6 digits available
+	}
+	
+
+	/* DEBUG
+	for (int i = 5; i < 299; i++)
+		messBuf[i] = 0x17;
+	*/
+
+	/* Limit data to SysEx range */ 
+	for (int i = 5; i < 299; i++)
+		if (messBuf[i] > 0x7F)
+			messBuf[i] = 0x00;
+
+	messBuf[299] = 0xF7;
+
+	if (m_midiout) {
+
+		MIDI_event_t msg;
+		msg.frame_offset = -1;
+		msg.size = messageSize;
+		memcpy(msg.midi_message, messBuf, sizeof(messBuf));
+		m_midiout->SendMsg(&msg, -1);
+	}
+
+
+	/* Multiple messages protocol
+	
 	//unsigned char messBuf[15] = { '0xF0','0x00', '0x00', '0x66', '0x17', '0x30', '0x38', '0x4C','0x35','0x30', '0x52', '0x35', '0x30', '0x20', '0xF7'};
 	
 	unsigned char messBuf[16];
@@ -504,7 +552,7 @@ void CSurf_US2400_stripoverlay::sendMidi()
 		{
 			messBuf[5] = ch;
 			messBuf[6] = line;
-			memcpy(messBuf + 7, stp_strings[ch + (24 * line)].Get(), 8);
+			memcpy(messBuf + 7, stp_strings[ch + (24 * line)].Get(), 8); //only 6 digits available
 			messBuf[15] = 0xF7;
 
 
@@ -519,6 +567,8 @@ void CSurf_US2400_stripoverlay::sendMidi()
 			}
 		}
 	}
+	*/
+
 
 
 	/* Mackie C4 like protocol
@@ -562,7 +612,7 @@ void CSurf_US2400_stripoverlay::UpdateDisplay(int chan_fx, int chan_par_offs, in
 
 			if ((stp_enc_touch & (1 << ch)) != (stp_enc_touch_prev & (1 << ch))
 				|| (stp_fdr_touch & (1 << ch)) != (stp_fdr_touch_prev & (1 << ch)))
-				Stp_Update(ch, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+				Stp_Update(ch, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
 		}
 
 		stp_enc_touch_prev = stp_enc_touch;

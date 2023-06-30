@@ -104,8 +104,12 @@ void csurf_utils::PrepareParamMapArray(MediaTrack* tr, int fxNr)
 	{
 		while (true) {
 			inFile >> paramNums[i];
-			if (paramNums[i] >= trackFXNumParams-1)
-				paramNums[i] = trackFXNumParams-1;
+			if (abs(paramNums[i]) >= trackFXNumParams-1)
+				if (paramNums[i] >= 0)
+					paramNums[i] = trackFXNumParams-1;
+				else
+					paramNums[i] = -1*(trackFXNumParams - 1);
+
 
 			if (inFile.eof()) break;
 			if (i >= MAX_PARAM_NUMBERS) break; //prevent array overflow
@@ -121,5 +125,7 @@ void csurf_utils::PrepareParamMapArray(MediaTrack* tr, int fxNr)
 
 int csurf_utils::TrackFX_RemapParam(int inParamNr)
 {
+	//returns signed paramnumber (negative sign is for rotational inversion)
+	//use abs() where rotation information is not needed
 	return paramNums[inParamNr];
 }

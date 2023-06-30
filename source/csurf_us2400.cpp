@@ -372,7 +372,7 @@ class CSurf_US2400 : public IReaperControlSurface
       s_touch_fdr = s_touch_fdr & (~(1 << ch_id));
     }
     
-	  stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+	  stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
   } // OnFaderTouch
 
 
@@ -479,7 +479,7 @@ class CSurf_US2400 : public IReaperControlSurface
       } // if (ismaster), else if (isactive)
     } // if (exists)
 
-    stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+    stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
     MySetSurface_UpdateFader(ch_id);
   } // OnFaderChange()
 
@@ -638,7 +638,7 @@ class CSurf_US2400 : public IReaperControlSurface
       } // if (m_flip), else
 
       MySetSurface_UpdateEncoder(ch_id); // because touched track doesn't get updated
-      stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+      stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
 
       s_touch_enc[ch_id] = ENCTCHDLY;
 
@@ -1348,7 +1348,7 @@ class CSurf_US2400 : public IReaperControlSurface
       // update display and encoders / faders
       for (int ch = 0; ch < 24; ch++)
       {
-		    stpHandler->Stp_Update(ch, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+		    stpHandler->Stp_Update(ch, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
         if (!m_flip) MySetSurface_UpdateEncoder(ch);
         else MySetSurface_UpdateFader(ch);
       }
@@ -1574,13 +1574,20 @@ public:
   double MyCSurf_TrackFX_GetParam(MediaTrack* tr, int fx, int param, double* minval, double* maxval)
   {
       int remappedParam = csurf_utils::TrackFX_RemapParam(param);
-      return TrackFX_GetParam(tr, fx, remappedParam, minval, maxval);
+      if (remappedParam >= 0) 
+        return TrackFX_GetParam(tr, fx, abs(remappedParam), minval, maxval);
+      else //negative sign means invert rotation of parameter
+        return 1-TrackFX_GetParam(tr, fx, abs(remappedParam), minval, maxval);
   }//MyCSurf_TrackFX_GetParam
 
   bool MyCSurf_TrackFX_SetParam(MediaTrack* tr, int fx, int param, double val)
   {
       int remappedParam = csurf_utils::TrackFX_RemapParam(param);
-      return TrackFX_SetParam(tr, fx, remappedParam, val);
+
+      if (remappedParam >= 0)
+        return TrackFX_SetParam(tr, fx, abs(remappedParam), val);
+      else  //negative sign means invert rotation of parameter
+        return TrackFX_SetParam(tr, fx, abs(remappedParam), (double)(1.0f-val));
   }//MyCSurf_TrackFX_GetParam
 
 
@@ -2177,7 +2184,7 @@ public:
       if (m_flip) MySetSurface_UpdateFader(ch_id);
       else MySetSurface_UpdateEncoder(ch_id);
 
-      stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+      stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
     }
 
   } // MySetSurface_Chan_Set_FXParamOffset
@@ -2205,7 +2212,7 @@ public:
       MyCSurf_Chan_OpenFX(chan_fx);
 
 	  for (int enc = 0; enc < 24; enc++)
-		  stpHandler->Stp_Update(enc, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+		  stpHandler->Stp_Update(enc, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
     }
 
     // bugfix: deselect master
@@ -2243,7 +2250,7 @@ public:
       MySetSurface_UpdateFader(ch_id);
       MySetSurface_UpdateTrackElement(ch_id);
 
-      stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+      stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, true);
     }
 
     MySetSurface_UpdateBankLEDs();
@@ -2277,7 +2284,7 @@ public:
 
     // update scribble strip
 	for (int enc = 0; enc < 24; enc++)
-		stpHandler->Stp_Update(enc, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+		stpHandler->Stp_Update(enc, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, true);
 
     // bugfix: deselect master
     if (!master_sel) SetTrackSelected(csurf_utils::Cnv_ChannelIDToMediaTrack(24, s_ch_offset), false);
@@ -2313,7 +2320,7 @@ public:
 
     // update scribble strip
 	for (int enc = 0; enc < 24; enc++)
-		stpHandler->Stp_Update(enc, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+		stpHandler->Stp_Update(enc, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, true);
 
     // bugfix: deselect master
 	if (!master_sel) SetTrackSelected(csurf_utils::Cnv_ChannelIDToMediaTrack(24, s_ch_offset), false);
@@ -2409,7 +2416,7 @@ public:
       MySetSurface_UpdateTrackElement(i);
       MySetSurface_UpdateEncoder(i);
 
-	  if (i < 24) stpHandler->Stp_Update(i, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+	  if (i < 24) stpHandler->Stp_Update(i, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
     }
   } // SetTrackListChange
 
@@ -2423,7 +2430,7 @@ public:
       if (mute) MySetSurface_UpdateButton(4 * ch_id + 3, true, false);
       else MySetSurface_UpdateButton(4 * ch_id + 3, false, false);
 
-	  stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+	  stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
     }
   } // SetSurfaceMute
 
@@ -2436,7 +2443,7 @@ public:
     if ( (ch_id >= 0) && (ch_id <= 24) ) 
     {
       MySetSurface_UpdateButton(4 * ch_id + 1, selected, false);
-	  stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+	  stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, true);
     }
   } // SetSurfaceSelected
 
@@ -2464,7 +2471,7 @@ public:
     if ((ch_id > 0) && (ch_id < 24))
     {
       MySetSurface_UpdateEncoder(ch_id);
-	  stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+	  stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
     }
   } // SetSurfaceRecArm
 
@@ -2812,7 +2819,7 @@ public:
     MySetSurface_UpdateAuxButtons();
 
 	for (int enc = 0; enc < 24; enc++)
-		stpHandler->Stp_Update(enc, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan);
+		stpHandler->Stp_Update(enc, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, true);
 
     // bugfix: deselect master
     if (!master_sel) SetTrackSelected(csurf_utils::Cnv_ChannelIDToMediaTrack(24, s_ch_offset), false);
