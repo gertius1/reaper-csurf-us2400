@@ -357,7 +357,7 @@ void CSurf_US2400_stripoverlay::Stp_CloseWindow()
 } // Stp_CloseWindow
 
 
-void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_flip, bool m_chan, bool updateHardwareLCD)
+void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_flip, bool m_chan, int updateModeHardwareLCD)
 {
 	if (stp_hwnd != NULL)
 	{
@@ -477,27 +477,219 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 			stp_repaint = true;
 
 			if (m_midiout)
-				if (updateHardwareLCD)
-					sendMidi();
+				if (updateModeHardwareLCD)
+					sendMidi(ch, m_chan, updateModeHardwareLCD);
 		}
 	}
 } // Stp_Update
 
-void CSurf_US2400_stripoverlay::sendMidi()
+void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHardwareLCD)
 {
-	//int ch = 0;
-	//int C4_displayNum;
-	//int offset;
-	//int line;
 
-	//send string all at once? avoid overhead of sysex header and footer
-	//stp_strings[49]
-	//unpack at receiver
-	//do we update single channel at some point? then the original routine makes sense. but not, if always all chans are updated
+	// Multiple Messages protocol; collect first into a big message buffer, then split up into display messages
+	// 10 Chars Small Font
+	const char nrOfLCDs = 18;
+	const char nrOfDigitsOnLCD = 10;
+	const char spacerSize = 2;
+	const char indentSizeTop = 0;
+	const char indentSizeBottom = 0;
+	const char displayLineSize = 16;
+	const int singleMessageSize = 38; //Sysex Header/Footer 6 Byte and message content 32 Byte
+	const int sysexHeaderSize = 5;
+	const int sysexFooterSize = 1;
+	const int nrOf_stp_strings = 49;
 
-	/* Single big message protocol */
+	bool updateFlags[nrOfLCDs];
+	for (int i = 0; i < nrOfLCDs; i++)
+		updateFlags[i] = false;
 
-	const char nrOfDigitsOnLCD = 6;
+	const int totalMessageSize = nrOf_stp_strings * displayLineSize + sysexHeaderSize + sysexFooterSize;
+
+	unsigned char bigBuf[totalMessageSize]; //collect everything here
+
+	char lineBuf[100];
+	memset(lineBuf, 0, 100);
+
+
+	memset(bigBuf, 0, totalMessageSize);
+
+	for (int i = 0; i < nrOf_stp_strings-1; i++)
+	{
+	
+		for (int j = 0; j < nrOfDigitsOnLCD; j++)
+			lineBuf[j] = 0;
+		
+		strcpy(lineBuf, stp_strings[i].Get());
+		
+		for (int j = 0; j < nrOfDigitsOnLCD; j++)
+		{
+			if (lineBuf[j] > 0x7F)
+				lineBuf[j] = 0x20;
+			if (lineBuf[j] == 0x00) //replace 0x00 to not terminate string on output
+				lineBuf[j] = 0x20;
+		}
+		
+
+		int offset = indentSizeBottom;
+		if (i < 24)
+			offset = indentSizeTop; //start first line indented for channel numbers
+
+		
+
+		memcpy(bigBuf + i * (nrOfDigitsOnLCD + spacerSize) + offset, lineBuf, nrOfDigitsOnLCD - offset); //only nrOfDigitsOnLCD digits available
+		memcpy(bigBuf + i * (nrOfDigitsOnLCD + spacerSize) + nrOfDigitsOnLCD, "||", 2); //spacer
+	}
+
+	// Limit data to SysEx range
+	for (int i = 0; i < totalMessageSize-1; i++)
+	{
+		if (bigBuf[i] > 0x7F)
+			bigBuf[i] = 0x20;
+		if (bigBuf[i] == 0x00) //replace 0x00 to not terminate string on output
+			bigBuf[i] = 0x20;
+	}
+
+
+	unsigned char messBuf[singleMessageSize];
+	messBuf[0] = 0xF0;
+	messBuf[1] = 0x00;
+	messBuf[2] = 0x00;
+	messBuf[3] = 0x66;
+	//messBuf[4] = 0x17;
+	messBuf[singleMessageSize-1] = 0xF7;
+
+	if (m_midiout) {
+
+		
+
+		if (updateModeHardwareLCD == 0) //no update of hardware LCD
+		{
+			return;
+		}
+		else if (updateModeHardwareLCD == 1) //update of single hardware LCD
+		{
+			for (int i = 0; i < nrOfLCDs; i++)
+				updateFlags[i] = false;
+			//determine, which LCDs need to be updated
+			switch (ch % 4)
+			{
+			case 0:
+				updateFlags[(ch / 4) * 3 + ch % 4] = true;
+				break;
+			case 1:
+				updateFlags[(ch / 4) * 3 + ch % 4 - 1] = true;
+				updateFlags[(ch / 4) * 3 + ch % 4] = true;
+				break;
+			case 2:
+				updateFlags[(ch / 4) * 3 + ch % 4 - 1] = true;
+				updateFlags[(ch / 4) * 3 + ch % 4] = true;
+				break;
+			case 3:
+				updateFlags[(ch / 4) * 3 + ch % 4 - 1] = true;
+				break;
+			default:
+				break;
+			}
+		}
+		else if (updateModeHardwareLCD == 2)  //update of all hardware LCDs
+		{
+			for (int i = 0; i < nrOfLCDs; i++)
+				updateFlags[i] = true;
+		}
+
+		//now that the LCDs that need to be updated have been determined, cycle through them all, and skip the ones that are already up-to-date
+		for (int i = 0; i < nrOfLCDs; i++) //one Midi message per display
+		{
+			if (updateFlags[i] == false)
+				continue;
+
+			messBuf[4] = i; //display Nr
+			memcpy(messBuf + sysexHeaderSize, bigBuf + i * displayLineSize, displayLineSize);//1st line
+			memcpy(messBuf + sysexHeaderSize + displayLineSize, bigBuf + i * displayLineSize + nrOfLCDs * displayLineSize, displayLineSize);//2nd line
+
+			MIDI_event_t msg;
+			msg.frame_offset = -1;
+			msg.size = singleMessageSize;
+			memcpy(msg.midi_message, messBuf, sizeof(messBuf));
+			m_midiout->SendMsg(&msg, -1);
+
+			updateFlags[i] = false;
+		}
+	}
+
+
+	/*
+	/// WORKING ///
+	// Multiple Messages protocol; collect first into a big message buffer, then split up into display messages
+	// 5 Chars Big Font
+	const char nrOfDigitsOnLCD = 5;
+	const char displayLineSize = 8;
+	const int totalMessageSize = 300;
+	const int singleMessageSize = 22; //Sysex Header/Footer 6 Byte and message content 16 Byte
+
+
+	unsigned char bigBuf[300]; //collect everything here
+
+	for (int i = 0; i < 49; i++)
+	{
+		int offset = 0;
+		if (i < 24)
+			offset = 2; //start first line indented for channel numbers
+
+		memcpy(bigBuf + i * (nrOfDigitsOnLCD + 1) + offset, stp_strings[i].Get(), nrOfDigitsOnLCD - offset); //only 5 digits available
+		memcpy(bigBuf + i * (nrOfDigitsOnLCD + 1) + nrOfDigitsOnLCD, "|", 1); //spacer
+	}
+
+	// Limit data to SysEx range
+	for (int i = 0; i < 299; i++)
+	{
+		if (bigBuf[i] > 0x7F)
+			bigBuf[i] = 0x20;
+		if (bigBuf[i] == 0x00) //replace 0x00 to not terminate string on output
+			bigBuf[i] = 0x20;
+	}
+	
+
+	unsigned char messBuf[singleMessageSize];
+	messBuf[0] = 0xF0;
+	messBuf[1] = 0x00;
+	messBuf[2] = 0x00;
+	messBuf[3] = 0x66;
+	//messBuf[4] = 0x17;
+	messBuf[21] = 0xF7;
+
+	if (m_midiout) {
+
+		for (int i = 0; i < 18; i++) //one Midi message per display line
+		{
+			messBuf[4] = i; //display Nr
+			memcpy(messBuf+5, bigBuf+i* displayLineSize, displayLineSize);//1st line
+			memcpy(messBuf + 5 + displayLineSize, bigBuf + i * displayLineSize + 18* displayLineSize, displayLineSize);//2nd line
+
+			MIDI_event_t msg;
+			msg.frame_offset = -1;
+			msg.size = singleMessageSize;
+			memcpy(msg.midi_message, messBuf, sizeof(messBuf));
+			m_midiout->SendMsg(&msg, -1);
+		}
+	}
+
+	*/
+
+
+
+
+
+
+
+
+
+
+
+	/*
+	// Single big message protocol
+
+	const char nrOfDigitsOnLCD = 5;
 	const int messageSize = 300;
 
 	unsigned char messBuf[messageSize];
@@ -509,22 +701,28 @@ void CSurf_US2400_stripoverlay::sendMidi()
 	
 	for (int i = 0; i < 49; i++)
 	{
-		memcpy(messBuf + 5 + i * nrOfDigitsOnLCD, stp_strings[i].Get(), nrOfDigitsOnLCD); //only 6 digits available
+		memcpy(messBuf + 5 + i * (nrOfDigitsOnLCD + 1), stp_strings[i].Get(), nrOfDigitsOnLCD); //only 5 digits available
+		memcpy(messBuf + 5 + i * (nrOfDigitsOnLCD + 1) + nrOfDigitsOnLCD, " ", 1); //spacer
 	}
 	
 
-	/* DEBUG
-	for (int i = 5; i < 299; i++)
-		messBuf[i] = 0x17;
-	*/
+	// DEBUG
+	//for (int i = 5; i < 299; i++)
+	//	messBuf[i] = 0x17;
 
-	/* Limit data to SysEx range */ 
+
+	// Limit data to SysEx range
 	for (int i = 5; i < 299; i++)
+	{
 		if (messBuf[i] > 0x7F)
-			messBuf[i] = 0x00;
-
+			messBuf[i] = 0x20;
+		if (messBuf[i] == 0x00) //replace 0x00 to not terminate string on output
+			messBuf[i] = 0x20;
+	}
 	messBuf[299] = 0xF7;
 
+
+	//send one big message
 	if (m_midiout) {
 
 		MIDI_event_t msg;
@@ -533,7 +731,7 @@ void CSurf_US2400_stripoverlay::sendMidi()
 		memcpy(msg.midi_message, messBuf, sizeof(messBuf));
 		m_midiout->SendMsg(&msg, -1);
 	}
-
+	*/
 
 	/* Multiple messages protocol
 	

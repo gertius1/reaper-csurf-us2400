@@ -31,7 +31,7 @@ class CSurf_US2400_stripoverlay
 	
 	public:
 		CSurf_US2400_stripoverlay(midi_Output* midiout);
-		void sendMidi();
+		void sendMidi(int ch, bool m_chan, int updateModeHardwareLCD);
 		void UpdateDisplay(int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_chan, bool m_flip);
 		void Stp_CloseWindow();
 		void Stp_OpenWindow(int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_chan, bool m_flip);
@@ -39,7 +39,8 @@ class CSurf_US2400_stripoverlay
 		void Stp_RetrieveCoords();
 		void Stp_SaveCoords();
 		void Stp_StoreWinCoords(HWND hwnd);
-		void Stp_Update(int ch, int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_flip, bool m_chan, bool updateHardwareLCD);
+		//stp_udate: updateModeHardwareLCD: 0 no update; 1 single track; 2 all tracks
+		void Stp_Update(int ch, int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_flip, bool m_chan, int updateModeHardwareLCD);
 		void SetRepaint();
 		bool ShouldReopen();
 		void ToggleWindow(int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_chan, bool m_flip);
