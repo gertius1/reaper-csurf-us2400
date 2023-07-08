@@ -1348,7 +1348,7 @@ class CSurf_US2400 : public IReaperControlSurface
       // update display and encoders / faders
       for (int ch = 0; ch < 24; ch++)
       {
-		    stpHandler->Stp_Update(ch, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, (ch >= 23) * 2);
+		    stpHandler->Stp_Update(ch, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
         if (!m_flip) MySetSurface_UpdateEncoder(ch);
         else MySetSurface_UpdateFader(ch);
       }
@@ -1876,7 +1876,7 @@ public:
       int para_amount;
 
       double d_value;
-      unsigned char value;
+      unsigned char value = 0;
       bool dot = false; // for phase switch, rec arm
 
       bool istrack = true;

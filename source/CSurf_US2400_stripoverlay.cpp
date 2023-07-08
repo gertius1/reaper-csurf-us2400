@@ -491,15 +491,19 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 	const char nrOfLCDs = 18;
 	const char nrOfDigitsOnLCD = 10;
 	const char spacerSize = 2;
-	const char indentSizeTop = 0;
-	const char indentSizeBottom = 0;
+	char indentSizeTop = 0;
+	if (m_chan)
+		indentSizeTop = 1;
+	else
+		indentSizeTop = 4;
+	const char indentSizeBottom = 1;
 	const char displayLineSize = 16;
-	const int singleMessageSize = 38; //Sysex Header/Footer 6 Byte and message content 32 Byte
-	const int sysexHeaderSize = 5;
+	const int singleMessageSize = 39; //Sysex Header 6/Footer 1 Byte and message content 32 Byte
+	const int sysexHeaderSize = 6;
 	const int sysexFooterSize = 1;
 	const int nrOf_stp_strings = 49;
 
-	bool updateFlags[nrOfLCDs];
+	bool updateFlags[nrOfLCDs]; 
 	for (int i = 0; i < nrOfLCDs; i++)
 		updateFlags[i] = false;
 
@@ -556,6 +560,7 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 	messBuf[2] = 0x00;
 	messBuf[3] = 0x66;
 	//messBuf[4] = 0x17;
+	messBuf[5] = m_chan;
 	messBuf[singleMessageSize-1] = 0xF7;
 
 	if (m_midiout) {
@@ -566,7 +571,7 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 		{
 			return;
 		}
-		else if (updateModeHardwareLCD == 1) //update of single hardware LCD
+		else if (updateModeHardwareLCD == 1) //update of specific hardware LCDs
 		{
 			for (int i = 0; i < nrOfLCDs; i++)
 				updateFlags[i] = false;
@@ -674,125 +679,6 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 		}
 	}
 
-	*/
-
-
-
-
-
-
-
-
-
-
-
-	/*
-	// Single big message protocol
-
-	const char nrOfDigitsOnLCD = 5;
-	const int messageSize = 300;
-
-	unsigned char messBuf[messageSize];
-	messBuf[0] = 0xF0;
-	messBuf[1] = 0x00;
-	messBuf[2] = 0x00;
-	messBuf[3] = 0x66;
-	messBuf[4] = 0x17;
-	
-	for (int i = 0; i < 49; i++)
-	{
-		memcpy(messBuf + 5 + i * (nrOfDigitsOnLCD + 1), stp_strings[i].Get(), nrOfDigitsOnLCD); //only 5 digits available
-		memcpy(messBuf + 5 + i * (nrOfDigitsOnLCD + 1) + nrOfDigitsOnLCD, " ", 1); //spacer
-	}
-	
-
-	// DEBUG
-	//for (int i = 5; i < 299; i++)
-	//	messBuf[i] = 0x17;
-
-
-	// Limit data to SysEx range
-	for (int i = 5; i < 299; i++)
-	{
-		if (messBuf[i] > 0x7F)
-			messBuf[i] = 0x20;
-		if (messBuf[i] == 0x00) //replace 0x00 to not terminate string on output
-			messBuf[i] = 0x20;
-	}
-	messBuf[299] = 0xF7;
-
-
-	//send one big message
-	if (m_midiout) {
-
-		MIDI_event_t msg;
-		msg.frame_offset = -1;
-		msg.size = messageSize;
-		memcpy(msg.midi_message, messBuf, sizeof(messBuf));
-		m_midiout->SendMsg(&msg, -1);
-	}
-	*/
-
-	/* Multiple messages protocol
-	
-	//unsigned char messBuf[15] = { '0xF0','0x00', '0x00', '0x66', '0x17', '0x30', '0x38', '0x4C','0x35','0x30', '0x52', '0x35', '0x30', '0x20', '0xF7'};
-	
-	unsigned char messBuf[16];
-	messBuf[0] = 0xF0;
-	messBuf[1] = 0x00;
-	messBuf[2] = 0x00;
-	messBuf[3] = 0x66;
-	messBuf[4] = 0x17;
-
-	for (ch = 0; ch < 24; ch++)
-	{
-		for (line = 0; line < 2; line++)
-		{
-			messBuf[5] = ch;
-			messBuf[6] = line;
-			memcpy(messBuf + 7, stp_strings[ch + (24 * line)].Get(), 8); //only 6 digits available
-			messBuf[15] = 0xF7;
-
-
-
-			if (m_midiout) {
-
-				MIDI_event_t msg;
-				msg.frame_offset = -1;
-				msg.size = 15;
-				memcpy(msg.midi_message, messBuf, sizeof(messBuf));
-				m_midiout->SendMsg(&msg, -1);
-			}
-		}
-	}
-	*/
-
-
-
-	/* Mackie C4 like protocol
-	for (ch = 0; ch < 24; ch++)
-	{
-		for (line = 0; line < 2; line++)
-		{
-			C4_displayNum = 0x30 + ch / 8;
-			offset = (line * 0x38) + (ch % 8) * 7;
-			messBuf[5] = C4_displayNum;
-			messBuf[6] = offset;
-			memcpy(messBuf + 7, stp_strings[ch + (24 * line)].Get(), 7);
-			messBuf[14] = 0xF7;
-
-
-
-			if (m_midiout) {
-
-				MIDI_event_t msg;
-				msg.frame_offset = -1;
-				msg.size = 15;
-				memcpy(msg.midi_message, messBuf, sizeof(messBuf));
-				m_midiout->SendMsg(&msg, -1);
-			}
-		}
-	}
 	*/
 }
 
