@@ -490,14 +490,16 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 	// 10 Chars Small Font
 	const char nrOfLCDs = 18;
 	const char nrOfDigitsOnLCD = 10;
+	const char nrOfDigitsOnLCDLargeFont = 5;
 	const char spacerSize = 2;
 	char indentSizeTop = 0;
 	if (m_chan)
 		indentSizeTop = 1;
 	else
-		indentSizeTop = 4;
+		indentSizeTop = 2;
 	const char indentSizeBottom = 1;
 	const char displayLineSize = 16;
+	const char displayLineSizeLargeFont = 8;
 	const int singleMessageSize = 39; //Sysex Header 6/Footer 1 Byte and message content 32 Byte
 	const int sysexHeaderSize = 6;
 	const int sysexFooterSize = 1;
@@ -539,7 +541,9 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 			offset = indentSizeTop; //start first line indented for channel numbers
 
 		
-
+		if (!m_chan && i < 24) //print large track numbers in PAN mode
+			memcpy(bigBuf + i * (nrOfDigitsOnLCDLargeFont + 1) + offset, lineBuf, nrOfDigitsOnLCDLargeFont - offset); //only nrOfDigitsOnLCD digits available
+		else
 		memcpy(bigBuf + i * (nrOfDigitsOnLCD + spacerSize) + offset, lineBuf, nrOfDigitsOnLCD - offset); //only nrOfDigitsOnLCD digits available
 		memcpy(bigBuf + i * (nrOfDigitsOnLCD + spacerSize) + nrOfDigitsOnLCD, "||", 2); //spacer
 	}
@@ -609,7 +613,10 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 				continue;
 
 			messBuf[4] = i; //display Nr
-			memcpy(messBuf + sysexHeaderSize, bigBuf + i * displayLineSize, displayLineSize);//1st line
+			if (!m_chan && i < 24) //print large track numbers in PAN mode
+				memcpy(messBuf + sysexHeaderSize, bigBuf + i * displayLineSizeLargeFont, displayLineSize);//1st line
+			else
+				memcpy(messBuf + sysexHeaderSize, bigBuf + i * displayLineSize, displayLineSize);//1st line
 			memcpy(messBuf + sysexHeaderSize + displayLineSize, bigBuf + i * displayLineSize + nrOfLCDs * displayLineSize, displayLineSize);//2nd line
 
 			MIDI_event_t msg;
@@ -619,6 +626,30 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 			m_midiout->SendMsg(&msg, -1);
 
 			updateFlags[i] = false;
+		}
+
+		//display 19: VST name in m_chan mode; 32 chars = 2*displayLineSize
+		{
+			messBuf[4] = 18; //display Nr
+			if (m_chan)
+				strcpy(lineBuf, stp_strings[48].Get());
+			else
+				memset(lineBuf, 0x20, 2* displayLineSize);
+
+			for (int j = 0; j < 2 * displayLineSize; j++)
+			{
+				if (lineBuf[j] > 0x7F)
+					lineBuf[j] = 0x20;
+				if (lineBuf[j] == 0x00) //replace 0x00 to not terminate string on output
+					lineBuf[j] = 0x20;
+			}
+			memcpy(messBuf + sysexHeaderSize, lineBuf, 2*displayLineSize);//1st line
+
+			MIDI_event_t msg;
+			msg.frame_offset = -1;
+			msg.size = singleMessageSize;
+			memcpy(msg.midi_message, messBuf, sizeof(messBuf));
+			m_midiout->SendMsg(&msg, -1);
 		}
 	}
 
