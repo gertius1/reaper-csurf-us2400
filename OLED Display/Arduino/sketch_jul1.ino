@@ -72,87 +72,9 @@ void substituteSpacer()
     }
 }
 
-void OnMidiSysEx(byte* buf, unsigned len)
+void printSpacer(int dispNr, bool updateSpacerTop, bool updateSpacerBottom)
 {
-  /*
-    // DEBUG
-
-    Multi_OLEDFill(i, 0);
-    sprintf(dispLineBuf, "len %d", len);
-    Multi_OLEDWriteString(i, 0, 0, dispLineBuf, FONT_LARGE, 0);
-    i++;
-    if (i>18) i=0;
-  */
-
-    /// WORKING ///
-  // Tascam 2400 multiple small buffers
-
-    if(buf[0] == 0xF0){
-      if (buf[3] == 0x66) {
-
-        char dispNr = buf[4];
-
-        bool m_chan = buf[5];
-        
-
-        byte topLineNr = 0;
-        byte bottomLineNr = 0;
-
-        if (m_chan)
-        {
-          topLineNr = 0;
-          bottomLineNr = 1;
-        }
-        else
-        {
-          topLineNr = 6;
-          bottomLineNr = 7;
-        }
-
-        //Multi_OLEDFill(dispNr, 0);
-
-        updateSpacerTop = false;
-        updateSpacerBottom = false;
-
-        //Top Line
-        if (m_chan)
-          sprintf(dispLineBuf, (char*)buf + sysexHeaderSize, dispLineLength);
-        else
-          sprintf(dispLineBuf, (char*)buf + sysexHeaderSize, dispLineLengthLargeFont);
-
-        substituteSpacer();
-
-        if (memcmp(&dispCompareBuf[dispNr][0][0],dispLineBuf,dispLineLength)!=0)
-        {
-          //erase channel strip when switching to pan mode
-          if (!m_chan && previous_m_chan[dispNr])
-            Multi_OLEDWriteString(dispNr, 0, 0, "                ", FONT_NORMAL, 0);
-
-          if (m_chan)
-            Multi_OLEDWriteString(dispNr, 0, topLineNr, dispLineBuf, FONT_NORMAL, 0);
-          else
-            Multi_OLEDWriteString(dispNr, 0, 3, dispLineBuf, FONT_LARGE, 0);
-
-          memcpy(&dispCompareBuf[dispNr][0][0], dispLineBuf, dispLineLength);
-          updateSpacerTop = true;
-        }
-
-        //Bottom Line
-        sprintf(dispLineBuf, (char*)buf + sysexHeaderSize + dispLineLength, dispLineLength);
-        substituteSpacer();
-
-        if (memcmp(&dispCompareBuf[dispNr][1][0],dispLineBuf,dispLineLength)!=0)
-        {
-          if (!m_chan && previous_m_chan[dispNr])
-            Multi_OLEDWriteString(dispNr, 0, 1, "                ", FONT_NORMAL, 0);
-
-          Multi_OLEDWriteString(dispNr, 0, bottomLineNr, dispLineBuf, FONT_NORMAL, 0);  
-          memcpy(&dispCompareBuf[dispNr][1][0], dispLineBuf, dispLineLength);
-          updateSpacerBottom = true;
-        }
-
-
-        //print spacer
+          //print spacer
         char spacerBuf[2] = {186, 0};
 
         if (dispNr<18) //no spacer for rightmost display
@@ -183,8 +105,121 @@ void OnMidiSysEx(byte* buf, unsigned len)
             default:
             break;
           }
+}
 
-          previous_m_chan[dispNr] = m_chan;
+void OnMidiSysEx(byte* buf, unsigned len)
+{
+  /*
+    // DEBUG
+
+    Multi_OLEDFill(i, 0);
+    sprintf(dispLineBuf, "len %d", len);
+    Multi_OLEDWriteString(i, 0, 0, dispLineBuf, FONT_LARGE, 0);
+    i++;
+    if (i>18) i=0;
+  */
+
+    /// WORKING ///
+  // Tascam 2400 multiple small buffers
+
+    if(buf[0] == 0xF0){
+      if (buf[3] == 0x66) {
+
+        char dispNr = buf[4];
+
+        bool m_chan = buf[5];
+        
+
+        byte topLineNrChan = 0;
+        byte bottomLineNrChan = 1;
+
+        byte topLineNrPanLargeFont = 3;     
+        byte bottomLineNrPan = 7;
+/*
+        if (m_chan)
+        {
+          topLineNr = 0;
+          bottomLineNr = 1;
+        }
+        else
+        {
+          topLineNr = 6;
+          topLineNrLargeFont = 3;
+          bottomLineNr = 7;
+        }
+*/
+        //Multi_OLEDFill(dispNr, 0);
+
+        updateSpacerTop = false;
+        updateSpacerBottom = false;
+
+        ///////Top Line
+        if (m_chan)
+          sprintf(dispLineBuf, (char*)buf + sysexHeaderSize, dispLineLength);
+        else
+          sprintf(dispLineBuf, (char*)buf + sysexHeaderSize, dispLineLengthLargeFont);
+
+        substituteSpacer();
+
+        if (memcmp(&dispCompareBuf[dispNr][0][0],dispLineBuf,dispLineLength)!=0)
+        {
+          //erase channel strip when switching to pan mode
+          if (!m_chan && previous_m_chan[dispNr])
+          {
+            Multi_OLEDWriteString(dispNr, 0, topLineNrChan, "                ", FONT_NORMAL, 0);
+            updateSpacerTop = true;
+          }
+
+          if (m_chan)
+            Multi_OLEDWriteString(dispNr, 0, topLineNrChan, dispLineBuf, FONT_NORMAL, 0);
+          else
+            Multi_OLEDWriteString(dispNr, 0, topLineNrPanLargeFont, dispLineBuf, FONT_LARGE, 0);
+
+          memcpy(&dispCompareBuf[dispNr][0][0], dispLineBuf, dispLineLength);
+          if (m_chan)
+            updateSpacerTop = true;
+          else
+            updateSpacerBottom = true;
+        }
+
+        ///////Bottom Line
+        sprintf(dispLineBuf, (char*)buf + sysexHeaderSize + dispLineLength, dispLineLength);
+        substituteSpacer();
+
+        if (memcmp(&dispCompareBuf[dispNr][1][0],dispLineBuf,dispLineLength)!=0)
+        {
+          if (!m_chan && previous_m_chan[dispNr])
+          {
+            Multi_OLEDWriteString(dispNr, 0, bottomLineNrChan, "                ", FONT_NORMAL, 0);
+            updateSpacerTop = true;
+          }
+          if (m_chan)
+            Multi_OLEDWriteString(dispNr, 0, bottomLineNrChan, dispLineBuf, FONT_NORMAL, 0);  
+          else
+            Multi_OLEDWriteString(dispNr, 0, bottomLineNrPan, dispLineBuf, FONT_NORMAL, 0);  
+
+          memcpy(&dispCompareBuf[dispNr][1][0], dispLineBuf, dispLineLength);
+          if (m_chan)
+            updateSpacerTop = true;
+          else
+            updateSpacerBottom = true;       
+        }
+
+        //print mode on screen 19
+       
+        if (dispNr == 18)
+        {
+          if (m_chan)
+            Multi_OLEDWriteString(dispNr, 0, topLineNrPanLargeFont, "  CHAN  ", FONT_LARGE, 0);
+          else
+            Multi_OLEDWriteString(dispNr, 0, topLineNrPanLargeFont, "  PAN   ", FONT_LARGE, 0);
+
+
+        }
+       
+        printSpacer(dispNr, updateSpacerTop, updateSpacerBottom);
+
+        previous_m_chan[dispNr] = m_chan;
       }
    }
    /*
@@ -221,6 +256,7 @@ void setup() {
 
   for (int i = 0; i < NUM_DISPLAYS; i++)
     previous_m_chan[i] = false;
+
 }
 
 void loop() 
@@ -232,8 +268,9 @@ void loop()
   for (i=0; i<NUM_DISPLAYS; i++)
   {
     Multi_OLEDFill(i, 0);
-    //Multi_OLEDSetContrast(i, 20);
+    Multi_OLEDSetContrast(i, 127);
     //Multi_OLEDDrawLine(i, 64,0,64,63);
+    printSpacer(i, true, true);
     
     if (i==18)
     {

@@ -39,7 +39,6 @@ class CSurf_US2400_stripoverlay
 		void Stp_RetrieveCoords();
 		void Stp_SaveCoords();
 		void Stp_StoreWinCoords(HWND hwnd);
-		//stp_udate: updateModeHardwareLCD: 0 no update; 1 single track; 2 all tracks
 		void Stp_Update(int ch, int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_flip, bool m_chan, int updateModeHardwareLCD);
 		void SetRepaint();
 		bool ShouldReopen();

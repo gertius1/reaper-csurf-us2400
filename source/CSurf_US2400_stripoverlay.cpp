@@ -359,6 +359,8 @@ void CSurf_US2400_stripoverlay::Stp_CloseWindow()
 
 void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_offs, int s_touch_fdr, int s_touch_enc[24], int s_ch_offset, MediaTrack* chan_rpr_tk, bool m_flip, bool m_chan, int updateModeHardwareLCD)
 {
+	//updateModeHardwareLCD: 0 no update; 1 single track; 2 all tracks
+
 	if (stp_hwnd != NULL)
 	{
 		if ((ch >= 0) && (ch < 24))
@@ -474,6 +476,7 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 			// keep only alphanumeric, replace everything else with space
 			stp_strings[ch + 24] = csurf_utils::Utl_Alphanumeric(stp_strings[ch + 24]);
 
+
 			stp_repaint = true;
 
 			if (m_midiout)
@@ -486,7 +489,10 @@ void CSurf_US2400_stripoverlay::Stp_Update(int ch, int chan_fx, int chan_par_off
 void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHardwareLCD)
 {
 
-	// Multiple Messages protocol; collect first into a big message buffer, then split up into display messages
+	// Multiple Messages protocol; one midi message per display, containing top and bottom line together
+	// we send messages display-based, not channel-based, to be more efficient (channel-based might require multiple display writes).
+	// collect first into a big message buffer, then split up into display messages
+	// 
 	// 10 Chars Small Font
 	const char nrOfLCDs = 18;
 	const char nrOfDigitsOnLCD = 10;
@@ -535,17 +541,23 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 				lineBuf[j] = 0x20;
 		}
 		
-
+		// shift line contents to the right
 		int offset = indentSizeBottom;
 		if (i < 24)
-			offset = indentSizeTop; //start first line indented for channel numbers
+			offset = indentSizeTop;
 
 		
-		if (!m_chan && i < 24) //print large track numbers in PAN mode
+		if (!m_chan && i < 24) //print large font track numbers in PAN mode
+		{
 			memcpy(bigBuf + i * (nrOfDigitsOnLCDLargeFont + 1) + offset, lineBuf, nrOfDigitsOnLCDLargeFont - offset); //only nrOfDigitsOnLCD digits available
-		else
-		memcpy(bigBuf + i * (nrOfDigitsOnLCD + spacerSize) + offset, lineBuf, nrOfDigitsOnLCD - offset); //only nrOfDigitsOnLCD digits available
-		memcpy(bigBuf + i * (nrOfDigitsOnLCD + spacerSize) + nrOfDigitsOnLCD, "||", 2); //spacer
+			memcpy(bigBuf + i * (nrOfDigitsOnLCDLargeFont + 1) + nrOfDigitsOnLCDLargeFont, "|", 1); //spacer
+
+		}
+		else  //print small font
+		{
+			memcpy(bigBuf + i * (nrOfDigitsOnLCD + spacerSize) + offset, lineBuf, nrOfDigitsOnLCD - offset); //only nrOfDigitsOnLCD digits available
+			memcpy(bigBuf + i * (nrOfDigitsOnLCD + spacerSize) + nrOfDigitsOnLCD, "||", 2); //spacer
+		}
 	}
 
 	// Limit data to SysEx range
@@ -600,7 +612,7 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 				break;
 			}
 		}
-		else if (updateModeHardwareLCD == 2)  //update of all hardware LCDs
+		else if(updateModeHardwareLCD == 2)  //update of all hardware LCDs
 		{
 			for (int i = 0; i < nrOfLCDs; i++)
 				updateFlags[i] = true;
@@ -629,6 +641,7 @@ void CSurf_US2400_stripoverlay::sendMidi(int ch, bool m_chan, int updateModeHard
 		}
 
 		//display 19: VST name in m_chan mode; 32 chars = 2*displayLineSize
+		if (updateModeHardwareLCD == 2)
 		{
 			messBuf[4] = 18; //display Nr
 			if (m_chan)

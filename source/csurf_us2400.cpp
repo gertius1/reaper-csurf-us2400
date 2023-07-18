@@ -2415,6 +2415,15 @@ public:
   {
     CSurf_ResetAllCachedVolPanStates(); // is this needed?
 
+    
+    // update Midi LCD separately in m_chan mode (special mode where tracknames are updated in m_chan)
+
+    if (m_chan)
+        for (int i = 0; i < 24; i++)
+        {
+            if (i < 24) stpHandler->Stp_Update(i, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, false, (i >= 23) * 2);
+        }
+
     // reset faders, encoders, track elements, update scribble strip
     for (int i = 0; i < 25; i++)
     {
@@ -2422,7 +2431,7 @@ public:
       MySetSurface_UpdateTrackElement(i);
       MySetSurface_UpdateEncoder(i);
 
-	  if (i < 24) stpHandler->Stp_Update(i, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
+      if (i < 24) stpHandler->Stp_Update(i, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, (i >= 23) * 2);
     }
   } // SetTrackListChange
 
