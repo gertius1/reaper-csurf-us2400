@@ -479,7 +479,7 @@ class CSurf_US2400 : public IReaperControlSurface
       } // if (ismaster), else if (isactive)
     } // if (exists)
 
-    stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, false);
+    stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, m_flip);
     MySetSurface_UpdateFader(ch_id);
   } // OnFaderChange()
 
@@ -638,7 +638,7 @@ class CSurf_US2400 : public IReaperControlSurface
       } // if (m_flip), else
 
       MySetSurface_UpdateEncoder(ch_id); // because touched track doesn't get updated
-      stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, 1);
+      stpHandler->Stp_Update(ch_id, chan_fx, chan_par_offs, s_touch_fdr, s_touch_enc, s_ch_offset, chan_rpr_tk, m_flip, m_chan, !m_flip);
 
       s_touch_enc[ch_id] = ENCTCHDLY;
 
